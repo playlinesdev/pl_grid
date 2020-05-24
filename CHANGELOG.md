@@ -10,3 +10,5 @@
 
 <img src="./sample1.png"/><br/>
 * Other documentation improvements
+
+## [0.0.0+4] - Adds MIT License info
