@@ -1,6 +1,6 @@
 name: pl_grid
 description: A grid to display data that has pagination feature and more.
-version: 0.0.1+1
+version: 0.0.1+2
 homepage: https://safirafront.web.app
 
 environment:
