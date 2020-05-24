@@ -35,4 +35,7 @@ One can also use other parameters for example paginationItemClick that is a func
 
 The property asCard is set as default to true, but could be set to false, producing the following:
 
+<img src="https://github.com/playlinesdev/pl_grid/blob/master/sample1.png?raw=true"/>
+
 <img src="https://github.com/playlinesdev/pl_grid/blob/master/sample2.png?raw=true"/>
+<img src="https://github.com/playlinesdev/pl_grid/blob/master/sample_web.png?raw=true"/>

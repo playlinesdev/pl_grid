@@ -3,15 +3,57 @@ library pl_grid;
 import 'package:flutter/material.dart';
 
 class PlGrid extends StatelessWidget {
-  final double width, height;
-  final List<String> headerColumns;
+  final double width, height, headerHeight;
+  final List<dynamic> headerColumns;
   final List<List<dynamic>> data;
+
+  ///The percentage of the whole width that the column has to fit
   final List<double> columnWidthsPercentages;
   final Function(int) paginationItemClick;
+
+  ///Sets the height of each row manually
+  ///```dart
+  /// PlGrid(
+  ///   heightByRow: (row){
+  ///  //null would size automatically as if you
+  ///  //haven't passed the height to the container
+  ///  return row == 2 ? 40 : null;
+  ///  }
+  /// )
+  ///```
+  final double Function(int) heightByRow;
+
+  ///Sets the row cells alignment in a row manually
+  ///```dart
+  /// PlGrid(
+  ///   alignmentByRow: (row,cell){
+  ///  return row == 2 && cell == 2 ? Alignment.topRight : null;
+  ///  }
+  /// )
+  ///```
+  final Alignment Function(int, int) alignmentByRow;
+
+  ///Sets the header cells alignment manually
+  ///```dart
+  /// PlGrid(
+  ///   alignmentByRow: (cell){
+  ///  return cell == 2 ? Alignment.topRight : null;
+  ///  }
+  /// )
+  ///```
+  final Alignment Function(int) headerAlignmentByCells;
+
+  ///Max number of pages starting on page 1
   final int maxPages;
   final int curPage;
-  final TextStyle resultsStyle;
+
+  ///Custom style to apply to the rows
+  final TextStyle rowsStyle;
+
+  ///Custom style to apply to the pagination item buttons
   final TextStyle paginationStyle;
+
+  ///Custom style to apply to the header cells
   final TextStyle headerStyle;
 
   ///Render the widgetas a Card
@@ -23,26 +65,35 @@ class PlGrid extends StatelessWidget {
   ///Widget to display when theres no registers to display
   final Widget noContentWidget;
 
-  ///A function that receives the index of the cell, the string content and
+  ///A function that receives the index of the cell, the content and
   ///returns a widget to render the content of that cell
-  final Widget Function(int, String) resultsCellRenderer;
+  final Widget Function(int row, int cell, dynamic) rowsCellRenderer;
+
+  ///A function that receives the index of the header cell, the content and
+  ///returns a widget to render the content of that cell
+  final Widget Function(int, dynamic) headerCellRenderer;
 
   PlGrid({
     this.width = 200,
     this.height = 150,
+    this.headerHeight = 30,
     @required this.columnWidthsPercentages,
     @required this.headerColumns,
     this.data,
     this.paginationItemClick,
     @required this.maxPages,
     @required this.curPage,
-    this.resultsCellRenderer,
+    this.rowsCellRenderer,
+    this.headerCellRenderer,
+    this.heightByRow,
     this.asCard = true,
+    this.alignmentByRow,
+    this.headerAlignmentByCells,
     this.noContentWidget,
     this.asCardPadding = const EdgeInsets.all(2),
     this.headerStyle =
         const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-    this.resultsStyle =
+    this.rowsStyle =
         const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
     this.paginationStyle =
         const TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
@@ -78,14 +129,12 @@ class PlGrid extends StatelessWidget {
           children: <Widget>[
             Container(
               child: _tableHeader(),
-              height: headerStyle.fontSize + (headerStyle.fontSize / 10).ceil(),
             ),
             Expanded(
-                child: Scrollbar(
               child: data.length > 0
-                  ? _tableResults()
+                  ? _tableRows()
                   : noContentWidget ?? Container(),
-            )),
+            ),
             Container(
                 child: Scrollbar(
                   child: _pagination(),
@@ -96,32 +145,77 @@ class PlGrid extends StatelessWidget {
       );
 
   Widget _tableHeader() {
-    return _makeRow(headerColumns, style: headerStyle);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: List.generate(headerColumns.length, (i) {
+        bool left = i == 0, right = true;
+        Widget cellWidget = headerCellRenderer != null
+            ? headerCellRenderer(i, headerColumns[i])
+            : null;
+        return Container(
+          height: headerHeight,
+          alignment: headerAlignmentByCells != null
+              ? headerAlignmentByCells(i)
+              : Alignment.center,
+          decoration: BoxDecoration(
+            border: _makeBorder(
+              top: true,
+              left: left,
+              bottom: true,
+              right: right,
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(left: 2),
+            child: cellWidget ?? headerColumns[i] is Widget
+                ? headerColumns[i]
+                : Text(headerColumns[i].toString(), style: headerStyle),
+          ),
+          width: _getColumnWidth(i),
+        );
+      }),
+    );
   }
 
-  Row _makeRow(
+  _makeRow(
     List cells, {
     bool top = true,
     bool bottom = true,
+    int rowNumber,
     TextStyle style,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: List.generate(cells.length, (i) {
+    List<Widget> cellWidgets = List.generate(
+      cells.length,
+      (i) {
         bool left = i == 0, right = true;
+        Widget cellWidget = rowsCellRenderer != null
+            ? rowsCellRenderer(rowNumber, i, cells[i])
+            : null;
+        if (cellWidget == null) {
+          cellWidget = cells[i] is Widget
+              ? cells[i]
+              : Text(cells[i].toString(), style: style ?? rowsStyle);
+        }
         return Container(
+          height: heightByRow != null ? heightByRow(rowNumber) : null,
+          alignment: alignmentByRow != null
+              ? alignmentByRow(rowNumber, i)
+              : Alignment.center,
           decoration: BoxDecoration(
               border: _makeBorder(
                   top: top, left: left, bottom: bottom, right: right)),
           child: Padding(
             padding: EdgeInsets.only(left: 2),
-            child: resultsCellRenderer == null
-                ? Text(cells[i].toString(), style: style ?? resultsStyle)
-                : resultsCellRenderer(i, cells[i]),
+            child: cellWidget,
           ),
           width: _getColumnWidth(i),
         );
-      }),
+      },
+    );
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: cellWidgets,
     );
   }
 
@@ -140,12 +234,15 @@ class PlGrid extends StatelessWidget {
 
   BorderSide get _border => BorderSide(color: Colors.black38, width: 0.5);
 
-  Widget _tableResults() {
+  Widget _tableRows() {
     return ListView.builder(
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
       itemCount: data.length,
       itemBuilder: (ctx, i) => _makeRow(
         data[i],
         top: false,
+        rowNumber: i,
       ),
     );
   }
@@ -199,6 +296,6 @@ class PlGrid extends StatelessWidget {
   }
 
   String _logError(String error) {
-    return '[AgendaGrid] $error';
+    return '[PlGrid] $error';
   }
 }
