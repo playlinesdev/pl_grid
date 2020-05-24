@@ -29,10 +29,10 @@ PlGrid(
 
 and it will produce the following:
 
-<img src="./sample1.png"/>
+<img src="https://github.com/playlinesdev/pl_grid/blob/master/sample1.png?raw=true"/>
 
 One can also use other parameters for example paginationItemClick that is a function that receives the index of the page touched/clicked to execute any routine such as call api with next page results
 
 The property asCard is set as default to true, but could be set to false, producing the following:
 
-<img src="./sample2.png"/>
+<img src="https://github.com/playlinesdev/pl_grid/blob/master/sample2.png?raw=true"/>
