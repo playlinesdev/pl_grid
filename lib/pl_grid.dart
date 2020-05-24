@@ -30,12 +30,12 @@ class PlGrid extends StatelessWidget {
   PlGrid({
     this.width = 200,
     this.height = 150,
-    this.columnWidthsPercentages,
-    this.headerColumns,
+    @required this.columnWidthsPercentages,
+    @required this.headerColumns,
     this.data,
     this.paginationItemClick,
-    this.maxPages,
-    this.curPage,
+    @required this.maxPages,
+    @required this.curPage,
     this.resultsCellRenderer,
     this.asCard = true,
     this.noContentWidget,
@@ -100,7 +100,7 @@ class PlGrid extends StatelessWidget {
   }
 
   Row _makeRow(
-    List<String> cells, {
+    List cells, {
     bool top = true,
     bool bottom = true,
     TextStyle style,
