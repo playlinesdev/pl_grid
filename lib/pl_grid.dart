@@ -1,5 +1,7 @@
 library pl_grid;
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class PlGrid extends StatelessWidget {
@@ -7,9 +9,13 @@ class PlGrid extends StatelessWidget {
   final List<dynamic> headerColumns;
   final List<List<dynamic>> data;
 
+  ///Callback for searching if the search field is displayed
+  final Function(String) onSearch;
+
   ///The percentage of the whole width that the column has to fit
   final List<double> columnWidthsPercentages;
   final Function(int) paginationItemClick;
+  final Color Function(int) headerCellsColor;
 
   ///Sets the height of each row manually
   ///```dart
@@ -55,9 +61,22 @@ class PlGrid extends StatelessWidget {
 
   ///Custom style to apply to the header cells
   final TextStyle headerStyle;
+  final TextStyle zebraStyle;
 
   ///Render the widgetas a Card
   final bool asCard;
+  final bool applyZebraEffect;
+  final bool invertZebra;
+  final bool internalGrid;
+
+  final EdgeInsets searchBarPadding;
+  final EdgeInsets headerCellsPadding;
+  final EdgeInsets rowCellsPadding;
+  final bool showSearchBar;
+  final InputDecoration searchBarInputDecoration;
+  final TextStyle searchBarStyle;
+  final TextAlign searchBarTextAlign;
+  final double searchBarHeight;
 
   ///If rendering as a Card, sets the internal padding from the edge of the
   final EdgeInsets asCardPadding;
@@ -73,14 +92,51 @@ class PlGrid extends StatelessWidget {
   ///returns a widget to render the content of that cell
   final Widget Function(int, dynamic) headerCellRenderer;
 
+  static const baseSearchBarInputDecoration = InputDecoration(
+    suffixIcon: Icon(Icons.search, size: 16),
+    contentPadding: EdgeInsets.only(bottom: 12, left: 4),
+    hintText: 'Search...',
+    border: UnderlineInputBorder(),
+    filled: true,
+  );
+
+  static const baseSearchBarPadding =
+      const EdgeInsets.only(left: 180, top: 5, bottom: 5, right: 0);
+  static const baseAsCardPadding = const EdgeInsets.all(4);
+  static const baseHeaderCellsPadding = EdgeInsets.only(left: 10);
+  static const baseRowCellsPadding =
+      EdgeInsets.only(left: 10, top: 5, bottom: 5);
+
+  static const baseSearchBarStyle = const TextStyle(fontSize: 14);
+  static const baseHeaderStyle =
+      const TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+  static const baseRowStyle =
+      TextStyle(fontSize: 14, fontWeight: FontWeight.normal);
+  static const baseZebraStyle = TextStyle(
+      fontSize: 14, color: Colors.black87, fontWeight: FontWeight.normal);
+  static const basePaginationStyle =
+      const TextStyle(fontSize: 15, fontWeight: FontWeight.normal);
+
   PlGrid({
-    this.width = 200,
-    this.height = 150,
+    this.width = 320,
+    this.height = 220,
     this.headerHeight = 30,
     @required this.columnWidthsPercentages,
     @required this.headerColumns,
+    this.headerCellsPadding = baseHeaderCellsPadding,
+    this.rowCellsPadding = baseRowCellsPadding,
     this.data,
+    this.applyZebraEffect = true,
+    this.zebraStyle = baseZebraStyle,
+    this.invertZebra = false,
+    this.onSearch,
+    this.searchBarPadding = baseSearchBarPadding,
+    this.searchBarInputDecoration = baseSearchBarInputDecoration,
+    this.searchBarHeight = 20,
+    this.searchBarStyle = baseSearchBarStyle,
+    this.showSearchBar = true,
     this.paginationItemClick,
+    this.headerCellsColor,
     @required this.maxPages,
     @required this.curPage,
     this.rowsCellRenderer,
@@ -88,15 +144,14 @@ class PlGrid extends StatelessWidget {
     this.heightByRow,
     this.asCard = true,
     this.alignmentByRow,
+    this.internalGrid = false,
     this.headerAlignmentByCells,
     this.noContentWidget,
-    this.asCardPadding = const EdgeInsets.all(2),
-    this.headerStyle =
-        const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-    this.rowsStyle =
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
-    this.paginationStyle =
-        const TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
+    this.searchBarTextAlign = TextAlign.start,
+    this.asCardPadding = baseAsCardPadding,
+    this.headerStyle = baseHeaderStyle,
+    this.rowsStyle = baseRowStyle,
+    this.paginationStyle = basePaginationStyle,
   }) {
     if (headerColumns == null)
       throw Exception(_logError('Headers can\'t be null'));
@@ -127,9 +182,14 @@ class PlGrid extends StatelessWidget {
         height: height,
         child: Column(
           children: <Widget>[
-            Container(
-              child: _tableHeader(),
-            ),
+            if (showSearchBar)
+              Container(
+                height: searchBarPadding == null ? 20 : null,
+                alignment: Alignment.topRight,
+                child: _searchBar(),
+              ),
+            Container(child: _tableHeader()),
+            Container(height: 1, color: Colors.black),
             Expanded(
               child: data.length > 0
                   ? _tableRows()
@@ -144,6 +204,21 @@ class PlGrid extends StatelessWidget {
         ),
       );
 
+  Widget _searchBar() {
+    return Padding(
+      padding: searchBarPadding,
+      child: Container(
+        height: searchBarHeight,
+        child: TextFormField(
+          textAlign: searchBarTextAlign,
+          onChanged: onSearch,
+          style: searchBarStyle,
+          decoration: searchBarInputDecoration,
+        ),
+      ),
+    );
+  }
+
   Widget _tableHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -153,25 +228,28 @@ class PlGrid extends StatelessWidget {
             ? headerCellRenderer(i, headerColumns[i])
             : null;
         return Container(
+          width: _getColumnWidth(i),
           height: headerHeight,
           alignment: headerAlignmentByCells != null
               ? headerAlignmentByCells(i)
-              : Alignment.center,
+              : Alignment.centerLeft,
           decoration: BoxDecoration(
+            color: headerCellsColor != null ? headerCellsColor(i) : null,
             border: _makeBorder(
-              top: true,
-              left: left,
-              bottom: true,
-              right: right,
+              top: internalGrid ? true : false,
+              left: internalGrid ? left : false,
+              bottom: false,
+              right: internalGrid ? right : false,
             ),
           ),
           child: Padding(
-            padding: EdgeInsets.only(left: 2),
-            child: cellWidget ?? headerColumns[i] is Widget
-                ? headerColumns[i]
-                : Text(headerColumns[i].toString(), style: headerStyle),
+            padding: headerCellsPadding,
+            child: cellWidget != null
+                ? cellWidget
+                : headerColumns[i] is Widget
+                    ? headerColumns[i]
+                    : Text(headerColumns[i].toString(), style: headerStyle),
           ),
-          width: _getColumnWidth(i),
         );
       }),
     );
@@ -181,6 +259,7 @@ class PlGrid extends StatelessWidget {
     List cells, {
     bool top = true,
     bool bottom = true,
+    bool zebra = false,
     int rowNumber,
     TextStyle style,
   }) {
@@ -188,27 +267,35 @@ class PlGrid extends StatelessWidget {
       cells.length,
       (i) {
         bool left = i == 0, right = true;
+        var _style = applyZebraEffect && zebra ? zebraStyle : style;
         Widget cellWidget = rowsCellRenderer != null
             ? rowsCellRenderer(rowNumber, i, cells[i])
             : null;
         if (cellWidget == null) {
           cellWidget = cells[i] is Widget
               ? cells[i]
-              : Text(cells[i].toString(), style: style ?? rowsStyle);
+              : Text(cells[i].toString(), style: _style ?? rowsStyle);
         }
         return Container(
           height: heightByRow != null ? heightByRow(rowNumber) : null,
+          width: _getColumnWidth(i),
           alignment: alignmentByRow != null
               ? alignmentByRow(rowNumber, i)
-              : Alignment.center,
+              : Alignment.centerLeft,
           decoration: BoxDecoration(
+              boxShadow: applyZebraEffect && zebra
+                  ? [BoxShadow(color: Colors.grey[200])]
+                  : null,
               border: _makeBorder(
-                  top: top, left: left, bottom: bottom, right: right)),
+                top: false,
+                left: internalGrid ? left : false,
+                bottom: internalGrid ? bottom : false,
+                right: internalGrid ? right : false,
+              )),
           child: Padding(
-            padding: EdgeInsets.only(left: 2),
+            padding: rowCellsPadding,
             child: cellWidget,
           ),
-          width: _getColumnWidth(i),
         );
       },
     );
@@ -224,24 +311,32 @@ class PlGrid extends StatelessWidget {
     bool left = true,
     bool right = true,
     bool bottom = true,
+    Color borderColor = Colors.black38,
+    double width = 0.5,
   }) =>
       Border(
-        left: left ? _border : BorderSide.none,
-        top: top ? _border : BorderSide.none,
-        right: right ? _border : BorderSide.none,
-        bottom: bottom ? _border : BorderSide.none,
+        left: left ? _border(borderColor, width) : BorderSide.none,
+        top: top ? _border(borderColor, width) : BorderSide.none,
+        right: right ? _border(borderColor, width) : BorderSide.none,
+        bottom: bottom ? _border(borderColor, width) : BorderSide.none,
       );
 
-  BorderSide get _border => BorderSide(color: Colors.black38, width: 0.5);
+  BorderSide _border([Color color, double width]) =>
+      BorderSide(color: color, width: width);
 
   Widget _tableRows() {
-    return ListView.builder(
+    return ListView.separated(
       shrinkWrap: true,
       padding: EdgeInsets.zero,
       itemCount: data.length,
+      separatorBuilder: (BuildContext context, int index) => Container(
+        height: 1,
+        color: Colors.black26,
+      ),
       itemBuilder: (ctx, i) => _makeRow(
         data[i],
         top: false,
+        zebra: invertZebra ? i % 2 != 0 : i % 2 == 0,
         rowNumber: i,
       ),
     );
@@ -252,7 +347,9 @@ class PlGrid extends StatelessWidget {
       padding: const EdgeInsets.only(top: 1),
       child: Container(
         decoration: BoxDecoration(
-            border: Border(top: BorderSide(width: 0.7, color: Colors.black54))),
+            border: internalGrid
+                ? null
+                : Border(top: BorderSide(width: 0.7, color: Colors.black54))),
         child: ListView.separated(
             shrinkWrap: true,
             scrollDirection: Axis.horizontal,

@@ -16,3 +16,8 @@ Other documentation improvements
 ## [0.0.1+0] - Adds lots of customization possibilities to have control of each cell
 Makes it also possible to render Widgets on any cell
 <img src="https://github.com/playlinesdev/pl_grid/blob/master/sample4.png?raw=true"/>
+
+## [0.0.3+0] - Adds search bar and many possible customizations
+
+Below is a complex example of what is possible to achieve
+<img src="https://github.com/playlinesdev/pl_grid/blob/master/sample_complex.png?raw=true"/>
