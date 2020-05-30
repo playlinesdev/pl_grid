@@ -1,3 +1,5 @@
+[![Buy me a Coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://www.buymeacoffee.com/playlinesdev)
+
 # pl_grid
 
 The PlGrid is a grid view for showing data in a table with a sticky header and pagination components.
