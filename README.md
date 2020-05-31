@@ -1,5 +1,5 @@
 
-<img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="120px" height="34px" alt="https://www.buymeacoffee.com/playlinesdev" />
+<a href="https://www.buymeacoffee.com/playlinesdev" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
 
 # pl_grid
 
