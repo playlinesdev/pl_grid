@@ -1,9 +1,15 @@
 library pl_grid;
 
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
+///This is a widget component that aims to display a data grid with pagination and other
+///features such as built in search bar, sort, group, filter, etc in simple
+///statless widget like so:
+///
+///![](https://github.com/playlinesdev/pl_grid/blob/master/sample3.png?raw=true)
+///
+///It's possible to use any widget in any cell including the header making the grid very
+///flexible
 class PlGrid extends StatelessWidget {
   final double width, height, headerHeight;
   final List<dynamic> headerColumns;
