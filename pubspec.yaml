@@ -1,10 +1,8 @@
 name: pl_grid
 description: A grid to display data that has pagination feature and more. Good for mobile and web apps
-version: 0.0.3+1
+version: 0.0.3+2
 homepage: https://playlines.web.app
 repository: https://github.com/playlinesdev/pl_grid
-authors:
-  - PlaylinesDev
 
 environment:
   sdk: ">=2.7.0 <3.0.0"

@@ -21,3 +21,5 @@ Makes it also possible to render Widgets on any cell
 
 Below is a complex example of what is possible to achieve
 <img src="https://github.com/playlinesdev/pl_grid/blob/master/sample_complex.png?raw=true"/>
+
+## [0.0.3+2] Improvements on documentation
