@@ -1,7 +1,3 @@
-library pl_grid;
-
-import 'package:flutter/material.dart';
-
 ///This is a widget component that aims to display a data grid with pagination and other
 ///features such as built in search bar, sort, group, filter, etc in simple
 ///statless widget like so:
@@ -24,17 +20,66 @@ import 'package:flutter/material.dart';
 ///   maxPages: 4,
 ///)
 ///```
+library pl_grid;
+
+import 'package:flutter/material.dart';
+
+///The main class. Use it like
 class PlGrid extends StatelessWidget {
-  final double width, height, headerHeight;
+  ///The whole width of the PlGrid widget
+  final double width;
+
+  ///The whole height of the PlGrid widget
+  final double height;
+
+  ///The height of the header line
+  final double headerHeight;
+
+  ///A list of objects representing each header cell. Will accept a simple string and use
+  ///simple Text with the headerStyle or any Widget since it fits in the [headerHeight]
+  ///```dart
+  ///PlGrid(
+  ///   headerColumns: [Text('Header 1'), 'Header 2'],
+  ///)
+  ///```
   final List<dynamic> headerColumns;
+
+  ///A List of a List of objects representing rows and column cells. Will accept Strings or Widgets
+  ///```dart
+  /// PlGrid(
+  ///    data: [
+  ///       [1, 'Bruno', 34],
+  ///       [1, 'Roberto', Text('34', style: TextStyle(fontSize: 20))],
+  ///    ]
+  /// )
+  ///```
   final List<List<dynamic>> data;
 
   ///Callback for searching if the search field is displayed
+  ///```dart
+  ///PlGrid(
+  ///   onSearch: (typedOnSearchField){
+  ///     callApiGetMethod(query: typedOnSearchField)
+  ///   },
+  ///)
+  ///```
   final Function(String) onSearch;
 
   ///The percentage of the whole width that the column has to fit
   final List<double> columnWidthsPercentages;
+
+  ///A function that takes an int for the page and performs an action when the user
+  ///touches or clicks a pagination index
+  ///```dart
+  ///PlGrid(paginationItemClick: (i) => callApiGetMethod(page: i))
+  ///```
   final Function(int) paginationItemClick;
+
+  ///A function that takes in the index of the a header cell and returns a color for it's background
+  ///```dart
+  /////applies a "zebra effect" on the cells of the header
+  ///PlGrid(headerCellsColor: (i)=> i % 2 == 0 ? Colors.white : Colors.grey)
+  ///```
   final Color Function(int) headerCellsColor;
 
   ///Sets the height of each row manually
@@ -71,6 +116,8 @@ class PlGrid extends StatelessWidget {
 
   ///Max number of pages starting on page 1
   final int maxPages;
+
+  ///The current page that is beign ehxibited
   final int curPage;
 
   ///Custom style to apply to the rows
@@ -81,21 +128,53 @@ class PlGrid extends StatelessWidget {
 
   ///Custom style to apply to the header cells
   final TextStyle headerStyle;
+
+  ///A style for the "zebra effect affected" rows in case parameter [applyZebraEffect] is set to true
   final TextStyle zebraStyle;
 
   ///Render the widgetas a Card
   final bool asCard;
+
+  ///Marks to use zebra effect on rows
   final bool applyZebraEffect;
+
+  ///Reverts the zebra effect to apply the effect on odd or even indexes
   final bool invertZebra;
+
+  ///Marks if the PlGrid should show or not inner grid lines
   final bool internalGrid;
 
+  ///Padding to be applied on the search bar in case parameter [showSearchBar] is
+  ///set to true
   final EdgeInsets searchBarPadding;
+
+  ///Padding to be applied on every and each header cell
   final EdgeInsets headerCellsPadding;
+
+  ///Padding to be applied on every and each row cell
   final EdgeInsets rowCellsPadding;
+
+  ///Wheather to show or not the searchbar
   final bool showSearchBar;
+
+  ///Input decoration for the searchbar widget
+  ///```dart
+  ///PlGrid(
+  ///   searchBarInputDecoration: InputDecoration(
+  ///       border: OutlineInputBorder(),
+  ///       fillColor: Colors.blueGrey,
+  ///   ),
+  ///)
+  ///```
   final InputDecoration searchBarInputDecoration;
+
+  ///A style to apply on the searchbar
   final TextStyle searchBarStyle;
+
+  ///Searchbar text align property
   final TextAlign searchBarTextAlign;
+
+  ///The height for the searchbar widget
   final double searchBarHeight;
 
   ///If rendering as a Card, sets the internal padding from the edge of the
@@ -137,41 +216,51 @@ class PlGrid extends StatelessWidget {
   static const basePaginationStyle =
       const TextStyle(fontSize: 15, fontWeight: FontWeight.normal);
 
+  ///Constructs a grid with the given parameters
+  ///For many of the constructor input uses static const values that can be used with a
+  ///copyWith method if it's necessary to change just some of the standard properties like so.
+  ///It's always a PlGrid.base[... something]. For example:
+  ///```dart
+  ///PlGrid(
+  ///   headerStyle: PlGrid.baseHeaderStyle.copyWith(color: Colors.blue),
+  ///   searchBarStyle: PlGrid.baseSearchBarStyle.copyWith(fontSize: 30),
+  ///)
+  ///```
   PlGrid({
     this.width = 320,
     this.height = 220,
     this.headerHeight = 30,
     @required this.columnWidthsPercentages,
     @required this.headerColumns,
+    @required this.maxPages,
+    @required this.curPage,
     this.headerCellsPadding = baseHeaderCellsPadding,
-    this.rowCellsPadding = baseRowCellsPadding,
-    this.data,
     this.applyZebraEffect = true,
+    this.rowCellsPadding = baseRowCellsPadding,
     this.zebraStyle = baseZebraStyle,
     this.invertZebra = false,
-    this.onSearch,
     this.searchBarPadding = baseSearchBarPadding,
     this.searchBarInputDecoration = baseSearchBarInputDecoration,
     this.searchBarHeight = 20,
     this.searchBarStyle = baseSearchBarStyle,
     this.showSearchBar = true,
-    this.paginationItemClick,
-    this.headerCellsColor,
-    @required this.maxPages,
-    @required this.curPage,
-    this.rowsCellRenderer,
-    this.headerCellRenderer,
-    this.heightByRow,
     this.asCard = true,
-    this.alignmentByRow,
     this.internalGrid = false,
-    this.headerAlignmentByCells,
-    this.noContentWidget,
     this.searchBarTextAlign = TextAlign.start,
     this.asCardPadding = baseAsCardPadding,
     this.headerStyle = baseHeaderStyle,
     this.rowsStyle = baseRowStyle,
     this.paginationStyle = basePaginationStyle,
+    this.headerAlignmentByCells,
+    this.alignmentByRow,
+    this.data,
+    this.headerCellRenderer,
+    this.headerCellsColor,
+    this.heightByRow,
+    this.noContentWidget,
+    this.onSearch,
+    this.paginationItemClick,
+    this.rowsCellRenderer,
   }) {
     if (headerColumns == null)
       throw Exception(_logError('Headers can\'t be null'));
