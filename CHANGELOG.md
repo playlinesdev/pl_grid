@@ -26,3 +26,7 @@ Below is a complex example of what is possible to achieve
 
 ## [0.0.4] Awesome improvements on documentation
 Now every single parameter in the gigantic constructor is very well documented, sometimes with dart code example. To use the most of the widget.
+
+## [0.1.0] Breaking changes
+Converts the widget from a stateless widget to a stateful in order to control it better. Documentation also
+improved

@@ -1,6 +1,6 @@
 ///This is a widget component that aims to display a data grid with pagination and other
 ///features such as built in search bar, sort, group, filter, etc in simple
-///statless widget like so:
+///widget like so:
 ///
 ///![](https://github.com/playlinesdev/pl_grid/blob/master/sample1.png?raw=true)
 ///
@@ -24,8 +24,16 @@ library pl_grid;
 
 import 'package:flutter/material.dart';
 
+///A function that takes in the last String the user typed and the current one and returns a rule
+///if it should or not to notify a onSearch event
+typedef bool WillNotifySearch(
+    String lastSearchInput, String currentSearchInput);
+
 ///The main class. Use it like
-class PlGrid extends StatelessWidget {
+class PlGrid extends StatefulWidget {
+  ///A key for the Widget
+  final Key key;
+
   ///The whole width of the PlGrid widget
   final double width;
 
@@ -73,7 +81,7 @@ class PlGrid extends StatelessWidget {
   ///```dart
   ///PlGrid(paginationItemClick: (i) => callApiGetMethod(page: i))
   ///```
-  final Function(int) paginationItemClick;
+  final Function(int) onPaginationItemClick;
 
   ///A function that takes in the index of the a header cell and returns a color for it's background
   ///```dart
@@ -177,6 +185,27 @@ class PlGrid extends StatelessWidget {
   ///The height for the searchbar widget
   final double searchBarHeight;
 
+  ///A function that receives what user typed on searchbar and will only notify
+  ///onSearch event if the condition is satisfied. For example:
+  ///```dart
+  ///PlGrid(
+  ///   onSearch: (typedSearch){
+  ///
+  ///   },
+  ///   notifySearchOnlyIf: (lastTypedSearch, typedSearch) {
+  ///     //returns true if the typed String length is greather than 3
+  ///     //or if the user is deleting a character
+  ///     return typedSearch.length > 3 || (lastTypedSearch.length < typedSearch.length);
+  ///   }
+  ///)
+  ///```
+  final WillNotifySearch notifySearchOnlyIf;
+
+  ///A period to wait from the time the user starts typing to in fact the
+  ///time the widget will notify an onSearchType event so that it would not update
+  ///for every character typed or deleted. The period is in milliseconds
+  final int searchInterval;
+
   ///If rendering as a Card, sets the internal padding from the edge of the
   final EdgeInsets asCardPadding;
 
@@ -227,6 +256,7 @@ class PlGrid extends StatelessWidget {
   ///)
   ///```
   PlGrid({
+    this.key,
     this.width = 320,
     this.height = 220,
     this.headerHeight = 30,
@@ -244,6 +274,8 @@ class PlGrid extends StatelessWidget {
     this.searchBarHeight = 20,
     this.searchBarStyle = baseSearchBarStyle,
     this.showSearchBar = true,
+    this.notifySearchOnlyIf,
+    this.searchInterval,
     this.asCard = true,
     this.internalGrid = false,
     this.searchBarTextAlign = TextAlign.start,
@@ -259,7 +291,7 @@ class PlGrid extends StatelessWidget {
     this.heightByRow,
     this.noContentWidget,
     this.onSearch,
-    this.paginationItemClick,
+    this.onPaginationItemClick,
     this.rowsCellRenderer,
   }) {
     if (headerColumns == null)
@@ -274,12 +306,31 @@ class PlGrid extends StatelessWidget {
       throw Exception(_logError('columnWidth\'s sum is greather than 100'));
   }
 
+  String _logError(String error) {
+    return '[PlGrid] $error';
+  }
+
+  @override
+  _PlGridState createState() => _PlGridState();
+}
+
+class _PlGridState extends State<PlGrid> {
+  String lastSearch = '';
+  int lastMilliseconds;
+
+  @override
+  void initState() {
+    super.initState();
+    lastMilliseconds = DateTime.now().millisecondsSinceEpoch;
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (asCard)
+    if (widget.asCard)
       return Card(
+        key: widget.key,
         child: Padding(
-          padding: asCardPadding,
+          padding: widget.asCardPadding,
           child: content,
         ),
       );
@@ -287,83 +338,126 @@ class PlGrid extends StatelessWidget {
   }
 
   Widget get content => Container(
-        width: width,
-        height: height,
+        key: widget.asCard
+            ? null
+            : widget.key, //if asCard, the key is in the Card
+        width: widget.width,
+        height: widget.height,
         child: Column(
           children: <Widget>[
-            if (showSearchBar)
+            if (widget.showSearchBar)
               Container(
-                height: searchBarPadding == null ? 20 : null,
+                height: widget.searchBarPadding == null ? 20 : null,
                 alignment: Alignment.topRight,
                 child: _searchBar(),
               ),
             Container(child: _tableHeader()),
             Container(height: 1, color: Colors.black),
             Expanded(
-              child: data.length > 0
+              child: widget.data.length > 0
                   ? _tableRows()
-                  : noContentWidget ?? Container(),
+                  : widget.noContentWidget ?? Container(),
             ),
             Container(
                 child: Scrollbar(
                   child: _pagination(),
                 ),
-                height: paginationStyle.fontSize * 2)
+                height: widget.paginationStyle.fontSize * 2)
           ],
         ),
       );
 
   Widget _searchBar() {
     return Padding(
-      padding: searchBarPadding,
+      padding: widget.searchBarPadding,
       child: Container(
-        height: searchBarHeight,
+        height: widget.searchBarHeight,
         child: TextFormField(
-          textAlign: searchBarTextAlign,
-          onChanged: onSearch,
-          style: searchBarStyle,
-          decoration: searchBarInputDecoration,
+          textAlign: widget.searchBarTextAlign,
+          onChanged: (typedText) {
+            bool willNotify = false;
+            //initialy set to true because boolean values can never be null
+            bool completedInterval = true;
+            //if an onSearch event was provided, checks wheter it will be called or not
+            //checking the notifySearchOnlyIf and the searchInterval
+            if (widget.onSearch != null) {
+              if (widget.notifySearchOnlyIf != null) {
+                willNotify = widget.notifySearchOnlyIf(lastSearch, typedText);
+              }
+              //measures the elapsed time
+              int curMilliseconds = DateTime.now().millisecondsSinceEpoch;
+              int elapsedMilliseconds = curMilliseconds - lastMilliseconds;
+
+              //if the widget.searchInterval argument was provided, checks if the
+              //elapsed time is already bigger than or equals to the given value
+              if (widget.searchInterval != null) {
+                completedInterval =
+                    elapsedMilliseconds >= widget.searchInterval;
+              }
+
+              //considers both the notifySearchOnlyIf and the searchInterval
+              if (willNotify && completedInterval) {
+                widget.onSearch(typedText);
+              }
+            }
+            setState(() {
+              lastSearch = typedText;
+              //if the elapsed time since lastMilliseconds is greater than or equals to
+              //the widget.searchInterval, updates the lastMilliseconds to start over
+              //the countdown
+              if (completedInterval ?? false) {
+                lastMilliseconds = DateTime.now().millisecondsSinceEpoch;
+              }
+            });
+          },
+          style: widget.searchBarStyle,
+          decoration: widget.searchBarInputDecoration,
         ),
       ),
     );
   }
 
+  ///Builds the table header
   Widget _tableHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
-      children: List.generate(headerColumns.length, (i) {
+      children: List.generate(widget.headerColumns.length, (i) {
         bool left = i == 0, right = true;
-        Widget cellWidget = headerCellRenderer != null
-            ? headerCellRenderer(i, headerColumns[i])
+        Widget cellWidget = widget.headerCellRenderer != null
+            ? widget.headerCellRenderer(i, widget.headerColumns[i])
             : null;
         return Container(
           width: _getColumnWidth(i),
-          height: headerHeight,
-          alignment: headerAlignmentByCells != null
-              ? headerAlignmentByCells(i)
+          height: widget.headerHeight,
+          alignment: widget.headerAlignmentByCells != null
+              ? widget.headerAlignmentByCells(i)
               : Alignment.centerLeft,
           decoration: BoxDecoration(
-            color: headerCellsColor != null ? headerCellsColor(i) : null,
+            color: widget.headerCellsColor != null
+                ? widget.headerCellsColor(i)
+                : null,
             border: _makeBorder(
-              top: internalGrid ? true : false,
-              left: internalGrid ? left : false,
+              top: widget.internalGrid ? true : false,
+              left: widget.internalGrid ? left : false,
               bottom: false,
-              right: internalGrid ? right : false,
+              right: widget.internalGrid ? right : false,
             ),
           ),
           child: Padding(
-            padding: headerCellsPadding,
+            padding: widget.headerCellsPadding,
             child: cellWidget != null
                 ? cellWidget
-                : headerColumns[i] is Widget
-                    ? headerColumns[i]
-                    : Text(headerColumns[i].toString(), style: headerStyle),
+                : widget.headerColumns[i] is Widget
+                    ? widget.headerColumns[i]
+                    : Text(widget.headerColumns[i].toString(),
+                        style: widget.headerStyle),
           ),
         );
       }),
     );
   }
 
+  ///Builds a table row
   _makeRow(
     List cells, {
     bool top = true,
@@ -376,33 +470,35 @@ class PlGrid extends StatelessWidget {
       cells.length,
       (i) {
         bool left = i == 0, right = true;
-        var _style = applyZebraEffect && zebra ? zebraStyle : style;
-        Widget cellWidget = rowsCellRenderer != null
-            ? rowsCellRenderer(rowNumber, i, cells[i])
+        var _style =
+            widget.applyZebraEffect && zebra ? widget.zebraStyle : style;
+        Widget cellWidget = widget.rowsCellRenderer != null
+            ? widget.rowsCellRenderer(rowNumber, i, cells[i])
             : null;
         if (cellWidget == null) {
           cellWidget = cells[i] is Widget
               ? cells[i]
-              : Text(cells[i].toString(), style: _style ?? rowsStyle);
+              : Text(cells[i].toString(), style: _style ?? widget.rowsStyle);
         }
         return Container(
-          height: heightByRow != null ? heightByRow(rowNumber) : null,
+          height:
+              widget.heightByRow != null ? widget.heightByRow(rowNumber) : null,
           width: _getColumnWidth(i),
-          alignment: alignmentByRow != null
-              ? alignmentByRow(rowNumber, i)
+          alignment: widget.alignmentByRow != null
+              ? widget.alignmentByRow(rowNumber, i)
               : Alignment.centerLeft,
           decoration: BoxDecoration(
-              boxShadow: applyZebraEffect && zebra
+              boxShadow: widget.applyZebraEffect && zebra
                   ? [BoxShadow(color: Colors.grey[200])]
                   : null,
               border: _makeBorder(
                 top: false,
-                left: internalGrid ? left : false,
-                bottom: internalGrid ? bottom : false,
-                right: internalGrid ? right : false,
+                left: widget.internalGrid ? left : false,
+                bottom: widget.internalGrid ? bottom : false,
+                right: widget.internalGrid ? right : false,
               )),
           child: Padding(
-            padding: rowCellsPadding,
+            padding: widget.rowCellsPadding,
             child: cellWidget,
           ),
         );
@@ -415,6 +511,7 @@ class PlGrid extends StatelessWidget {
     );
   }
 
+  ///Creates the border of the container for each cell
   Border _makeBorder({
     bool top = true,
     bool left = true,
@@ -433,46 +530,49 @@ class PlGrid extends StatelessWidget {
   BorderSide _border([Color color, double width]) =>
       BorderSide(color: color, width: width);
 
+  ///Builds all the rows
   Widget _tableRows() {
     return ListView.separated(
       shrinkWrap: true,
       padding: EdgeInsets.zero,
-      itemCount: data.length,
+      itemCount: widget.data.length,
       separatorBuilder: (BuildContext context, int index) => Container(
         height: 1,
         color: Colors.black26,
       ),
       itemBuilder: (ctx, i) => _makeRow(
-        data[i],
+        widget.data[i],
         top: false,
-        zebra: invertZebra ? i % 2 != 0 : i % 2 == 0,
+        zebra: widget.invertZebra ? i % 2 != 0 : i % 2 == 0,
         rowNumber: i,
       ),
     );
   }
 
+  ///Builds the pagination widget
   Widget _pagination() {
     return Padding(
       padding: const EdgeInsets.only(top: 1),
       child: Container(
         decoration: BoxDecoration(
-            border: internalGrid
+            border: widget.internalGrid
                 ? null
                 : Border(top: BorderSide(width: 0.7, color: Colors.black54))),
         child: ListView.separated(
             shrinkWrap: true,
             scrollDirection: Axis.horizontal,
             separatorBuilder: (ctx, i) =>
-                Container(width: paginationStyle.fontSize / 2),
-            itemCount: maxPages,
+                Container(width: widget.paginationStyle.fontSize / 2),
+            itemCount: widget.maxPages,
             itemBuilder: (ctx, index) {
               var i = index + 1;
-              var style = paginationStyle;
-              if (i != curPage) style = style.copyWith(color: Colors.blue);
+              var style = widget.paginationStyle;
+              if (i != widget.curPage)
+                style = style.copyWith(color: Colors.blue);
 
               return Container(
                 child: _pageNumberWidget(i, style: style),
-                width: (width / style.fontSize / 2) +
+                width: (widget.width / style.fontSize / 2) +
                     (style.fontSize * i.toString().length),
               );
             }),
@@ -480,13 +580,14 @@ class PlGrid extends StatelessWidget {
     );
   }
 
+  ///Builds the page number
   Widget _pageNumberWidget(int i, {TextStyle style}) {
     return FlatButton(
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       padding: EdgeInsets.all(0),
-      onPressed: i != curPage
+      onPressed: i != widget.curPage && widget.onPaginationItemClick != null
           ? () {
-              paginationItemClick(i);
+              widget.onPaginationItemClick(i);
             }
           : null,
       visualDensity: VisualDensity(horizontal: 1),
@@ -494,14 +595,11 @@ class PlGrid extends StatelessWidget {
     );
   }
 
+  ///returns the width of each column by it's index
   double _getColumnWidth(int index) {
-    return columnWidthsPercentages != null &&
-            columnWidthsPercentages.length >= headerColumns.length
-        ? columnWidthsPercentages[index] / 100 * width
-        : width / headerColumns.length;
-  }
-
-  String _logError(String error) {
-    return '[PlGrid] $error';
+    return widget.columnWidthsPercentages != null &&
+            widget.columnWidthsPercentages.length >= widget.headerColumns.length
+        ? widget.columnWidthsPercentages[index] / 100 * widget.width
+        : widget.width / widget.headerColumns.length;
   }
 }
