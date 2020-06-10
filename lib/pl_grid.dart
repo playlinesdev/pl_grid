@@ -384,16 +384,6 @@ class _PlGridState extends State<PlGrid> {
               if (widget.notifySearchOnlyIf != null) {
                 willNotify = widget.notifySearchOnlyIf(lastSearch, typedText);
               }
-              //measures the elapsed time
-              int curMilliseconds = DateTime.now().millisecondsSinceEpoch;
-              int elapsedMilliseconds = curMilliseconds - lastMilliseconds;
-
-              //if the widget.searchInterval argument was provided, checks if the
-              //elapsed time is already bigger than or equals to the given value
-              if (widget.searchInterval != null) {
-                completedInterval =
-                    elapsedMilliseconds >= widget.searchInterval;
-              }
 
               //considers both the notifySearchOnlyIf and the searchInterval
               bool notify = true;
@@ -401,17 +391,20 @@ class _PlGridState extends State<PlGrid> {
               if (widget.notifySearchOnlyIf != null) notify &= willNotify;
               if (notify) {
                 widget.onSearch(typedText);
+              } else if (widget.searchInterval != null) {
+                Future.delayed(
+                  Duration(
+                      milliseconds:
+                          widget.searchInterval - elapsedMilliseconds),
+                ).then((value) {
+                  if (mounted && lastSearch != typedText) {
+                    widget.onSearch(typedText);
+                    _updateSearchState(typedText);
+                  }
+                });
               }
             }
-            setState(() {
-              lastSearch = typedText;
-              //if the elapsed time since lastMilliseconds is greater than or equals to
-              //the widget.searchInterval, updates the lastMilliseconds to start over
-              //the countdown
-              if (completedInterval ?? false) {
-                lastMilliseconds = DateTime.now().millisecondsSinceEpoch;
-              }
-            });
+            _updateSearchState(typedText);
           },
           style: widget.searchBarStyle,
           decoration: widget.searchBarInputDecoration,
@@ -419,6 +412,27 @@ class _PlGridState extends State<PlGrid> {
       ),
     );
   }
+
+  void _updateSearchState(String typedText) {
+    setState(() {
+      lastSearch = typedText;
+      //if the elapsed time since lastMilliseconds is greater than or equals to
+      //the widget.searchInterval, updates the lastMilliseconds to start over
+      //the countdown
+      if (completedInterval) {
+        lastMilliseconds = DateTime.now().millisecondsSinceEpoch;
+      }
+    });
+  }
+
+  ///if the widget.searchInterval argument was provided, checks if the
+  ///elapsed time is already bigger than or equals to the given value
+  bool get completedInterval =>
+      elapsedMilliseconds >= widget.searchInterval ?? false;
+
+  ///measures the elapsed time
+  int get elapsedMilliseconds =>
+      DateTime.now().millisecondsSinceEpoch - lastMilliseconds;
 
   ///Builds the table header
   Widget _tableHeader() {
