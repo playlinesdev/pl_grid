@@ -39,7 +39,7 @@ get grid => PlGrid(
       width: 320,
       height: 200,
       asCardPadding: EdgeInsets.all(10),
-      paginationItemClick: (i) {
+      onPaginationItemClick: (i) {
         print('touched pagination page $i button');
       },
       data: data,

@@ -23,7 +23,7 @@ class _PlGridExampleState extends State<PlGridExample> {
             searchBarHeight: 30,
             searchBarTextAlign: TextAlign.center,
             showSearchBar: true,
-            paginationItemClick: (pageClicked) {
+            onPaginationItemClick: (pageClicked) {
               print('Call the api with page attribute');
             },
             noContentWidget: Center(
