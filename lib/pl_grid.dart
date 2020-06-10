@@ -396,7 +396,10 @@ class _PlGridState extends State<PlGrid> {
               }
 
               //considers both the notifySearchOnlyIf and the searchInterval
-              if (willNotify && completedInterval) {
+              bool notify = true;
+              if (widget.searchInterval != null) notify &= completedInterval;
+              if (widget.notifySearchOnlyIf != null) notify &= willNotify;
+              if (notify) {
                 widget.onSearch(typedText);
               }
             }
