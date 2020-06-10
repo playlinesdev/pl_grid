@@ -386,8 +386,6 @@ class _PlGridState extends State<PlGrid> {
 
   void _handleSearchEvent(String typedText) {
     bool willNotify = false;
-    //initialy set to true because boolean values can never be null
-    bool completedInterval = true;
     //if an onSearch event was provided, checks wheter it will be called or not
     //checking the notifySearchOnlyIf and the searchInterval
     if (widget.onSearch != null) {
@@ -397,7 +395,7 @@ class _PlGridState extends State<PlGrid> {
 
       //considers both the notifySearchOnlyIf and the searchInterval
       bool notify = true;
-      if (widget.searchInterval != null) notify &= completedInterval;
+      if (widget.searchInterval != null) notify &= _completedInterval;
       if (widget.notifySearchOnlyIf != null) notify &= willNotify;
       if (notify) {
         widget.onSearch(typedText);
@@ -420,7 +418,7 @@ class _PlGridState extends State<PlGrid> {
       //if the elapsed time since lastMilliseconds is greater than or equals to
       //the widget.searchInterval, updates the lastMilliseconds to start over
       //the countdown
-      if (completedInterval) {
+      if (_completedInterval) {
         lastMilliseconds = DateTime.now().millisecondsSinceEpoch;
       }
     });
@@ -428,7 +426,7 @@ class _PlGridState extends State<PlGrid> {
 
   ///if the widget.searchInterval argument was provided, checks if the
   ///elapsed time is already bigger than or equals to the given value
-  bool get completedInterval =>
+  bool get _completedInterval =>
       elapsedMilliseconds >= widget.searchInterval ?? false;
 
   ///measures the elapsed time
