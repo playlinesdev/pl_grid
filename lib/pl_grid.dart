@@ -375,42 +375,43 @@ class _PlGridState extends State<PlGrid> {
         child: TextFormField(
           textAlign: widget.searchBarTextAlign,
           onChanged: (typedText) {
-            bool willNotify = false;
-            //initialy set to true because boolean values can never be null
-            bool completedInterval = true;
-            //if an onSearch event was provided, checks wheter it will be called or not
-            //checking the notifySearchOnlyIf and the searchInterval
-            if (widget.onSearch != null) {
-              if (widget.notifySearchOnlyIf != null) {
-                willNotify = widget.notifySearchOnlyIf(lastSearch, typedText);
-              }
-
-              //considers both the notifySearchOnlyIf and the searchInterval
-              bool notify = true;
-              if (widget.searchInterval != null) notify &= completedInterval;
-              if (widget.notifySearchOnlyIf != null) notify &= willNotify;
-              if (notify) {
-                widget.onSearch(typedText);
-              } else if (widget.searchInterval != null) {
-                Future.delayed(
-                  Duration(
-                      milliseconds:
-                          widget.searchInterval - elapsedMilliseconds),
-                ).then((value) {
-                  if (mounted && lastSearch != typedText) {
-                    widget.onSearch(typedText);
-                    _updateSearchState(typedText);
-                  }
-                });
-              }
-            }
-            _updateSearchState(typedText);
+            _handleSearchEvent(typedText);
           },
           style: widget.searchBarStyle,
           decoration: widget.searchBarInputDecoration,
         ),
       ),
     );
+  }
+
+  void _handleSearchEvent(String typedText) {
+    bool willNotify = false;
+    //initialy set to true because boolean values can never be null
+    bool completedInterval = true;
+    //if an onSearch event was provided, checks wheter it will be called or not
+    //checking the notifySearchOnlyIf and the searchInterval
+    if (widget.onSearch != null) {
+      if (widget.notifySearchOnlyIf != null) {
+        willNotify = widget.notifySearchOnlyIf(lastSearch, typedText);
+      }
+
+      //considers both the notifySearchOnlyIf and the searchInterval
+      bool notify = true;
+      if (widget.searchInterval != null) notify &= completedInterval;
+      if (widget.notifySearchOnlyIf != null) notify &= willNotify;
+      if (notify) {
+        widget.onSearch(typedText);
+      } else if (widget.searchInterval != null) {
+        Future.delayed(
+          Duration(milliseconds: widget.searchInterval - elapsedMilliseconds),
+        ).then((value) {
+          if (mounted && lastSearch != typedText) {
+            _handleSearchEvent(typedText);
+          }
+        });
+      }
+    }
+    _updateSearchState(typedText);
   }
 
   void _updateSearchState(String typedText) {
