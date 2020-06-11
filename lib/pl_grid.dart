@@ -409,7 +409,9 @@ class _PlGridState extends State<PlGrid> {
       //if the call came from a schedule and the current _searchController.text is
       //already equals to the last search, ignore the event
       if (typedText == lastSearch ||
-          (typedText == null && _searchController.text == lastSearch)) {
+          (typedText == null &&
+              _searchController.text.isNotEmpty &&
+              _searchController.text == lastSearch)) {
         return;
       }
 
