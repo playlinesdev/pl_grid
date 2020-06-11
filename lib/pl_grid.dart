@@ -71,7 +71,7 @@ class PlGrid extends StatefulWidget {
   ///   },
   ///)
   ///```
-  final Function(String) onSearch;
+  final Future<List<List>> Function(String) onSearch;
 
   ///The percentage of the whole width that the column has to fit
   final List<double> columnWidthsPercentages;
@@ -81,7 +81,7 @@ class PlGrid extends StatefulWidget {
   ///```dart
   ///PlGrid(paginationItemClick: (i) => callApiGetMethod(page: i))
   ///```
-  final Function(int) onPaginationItemClick;
+  final Future<List<List>> Function(int) onPaginationItemClick;
 
   ///A function that takes in the index of the a header cell and returns a color for it's background
   ///```dart
@@ -317,11 +317,13 @@ class PlGrid extends StatefulWidget {
 class _PlGridState extends State<PlGrid> {
   String lastSearch = '';
   int lastMilliseconds;
+  List<List> _data;
   var _searchController = TextEditingController(text: '');
 
   @override
   void initState() {
     super.initState();
+    _data = widget.data;
     lastMilliseconds = DateTime.now().millisecondsSinceEpoch;
   }
 
@@ -355,7 +357,7 @@ class _PlGridState extends State<PlGrid> {
             Container(child: _tableHeader()),
             Container(height: 1, color: Colors.black),
             Expanded(
-              child: widget.data.length > 0
+              child: _data.length > 0
                   ? _tableRows()
                   : widget.noContentWidget ?? Container(),
             ),
@@ -377,7 +379,10 @@ class _PlGridState extends State<PlGrid> {
           controller: _searchController,
           textAlign: widget.searchBarTextAlign,
           onChanged: (typed) {
-            _handleSearchEvent(typedText: typed);
+            //if the widget.onSearch was not passed, nothing else should execute
+            if (widget.onSearch != null) {
+              _handleSearchEvent(typedText: typed);
+            }
           },
           style: widget.searchBarStyle,
           decoration: widget.searchBarInputDecoration,
@@ -386,47 +391,50 @@ class _PlGridState extends State<PlGrid> {
     );
   }
 
-  void _handleSearchEvent({String typedText}) {
-    if (typedText == null) {
-      typedText = _searchController.text;
-    }
-    bool willNotify = false;
-    //if an onSearch event was provided, checks wheter it will be called or not
-    //checking the notifySearchOnlyIf and the searchInterval
-    if (widget.onSearch != null) {
-      if (widget.notifySearchOnlyIf != null) {
-        willNotify = widget.notifySearchOnlyIf(lastSearch, typedText);
+  ///Decides if the widget.onSearch event will or will not be called
+  ///depending on the widget.searchInterval and widget.notifyOnlyIf parameters
+  void _handleSearchEvent({String typedText}) async {
+    //if the interval is not completed will not call the widget.onSearch
+    if (_completedInterval) {
+      //once completed, resets it
+      setState(() {
+        _resetSearchInterval();
+      });
+
+      //if the call of typedTex contains the same text of the previous call or
+      //if the call came from a schedule and the current _searchController.text is
+      //already equals to the last search, ignore the event
+      if (typedText == lastSearch ||
+          (typedText == null && _searchController.text == lastSearch)) {
+        return;
       }
 
-      //considers both the notifySearchOnlyIf and the searchInterval
-      bool notify = true;
-      if (widget.searchInterval != null) notify &= _completedInterval;
-      if (widget.notifySearchOnlyIf != null) notify &= willNotify;
-      if (notify) {
-        widget.onSearch(typedText);
-      } else if (widget.searchInterval != null) {
-        Future.delayed(
-          Duration(milliseconds: widget.searchInterval - elapsedMilliseconds),
-        ).then((value) {
-          if (mounted && lastSearch != typedText) {
-            _handleSearchEvent();
-          }
-        });
+      //if the widget.notifySearchOnlyIf is passed, checks it
+      if (widget.notifySearchOnlyIf == null ||
+          (widget.notifySearchOnlyIf != null &&
+              widget.notifySearchOnlyIf(lastSearch, typedText))) {
+        //will call the widget.onSearch
+        var newData = await widget.onSearch(typedText);
+        //if newData came from the widget.onSearch
+        if (newData != null) {
+          setState(() {
+            _data = newData;
+          });
+        }
       }
+    } else {
+      //if the _handleSearchEvent is called whithin the search interval, schedules a new try
+      Future.delayed(
+        Duration(milliseconds: widget.searchInterval - elapsedMilliseconds),
+      ).then(
+        (value) => _handleSearchEvent(),
+      );
     }
-    _updateSearchState();
   }
 
-  void _updateSearchState() {
-    setState(() {
-      lastSearch = _searchController.text;
-      //if the elapsed time since lastMilliseconds is greater than or equals to
-      //the widget.searchInterval, updates the lastMilliseconds to start over
-      //the countdown
-      if (_completedInterval) {
-        lastMilliseconds = DateTime.now().millisecondsSinceEpoch;
-      }
-    });
+  ///Resets the search interval making it equals to the current millisecondsSinceEpoch
+  void _resetSearchInterval() {
+    lastMilliseconds = DateTime.now().millisecondsSinceEpoch;
   }
 
   ///if the widget.searchInterval argument was provided, checks if the
@@ -556,13 +564,13 @@ class _PlGridState extends State<PlGrid> {
     return ListView.separated(
       shrinkWrap: true,
       padding: EdgeInsets.zero,
-      itemCount: widget.data.length,
+      itemCount: _data.length,
       separatorBuilder: (BuildContext context, int index) => Container(
         height: 1,
         color: Colors.black26,
       ),
       itemBuilder: (ctx, i) => _makeRow(
-        widget.data[i],
+        _data[i],
         top: false,
         zebra: widget.invertZebra ? i % 2 != 0 : i % 2 == 0,
         rowNumber: i,
@@ -608,12 +616,23 @@ class _PlGridState extends State<PlGrid> {
       padding: EdgeInsets.all(0),
       onPressed: i != widget.curPage && widget.onPaginationItemClick != null
           ? () {
-              widget.onPaginationItemClick(i);
+              _handlePaginationClick(i);
             }
           : null,
       visualDensity: VisualDensity(horizontal: 1),
       child: Text(i.toString(), style: style),
     );
+  }
+
+  ///Performs the widget.onPaginationItemClick and in an await
+  ///call and if it returns new data, updates the data
+  void _handlePaginationClick(int i) async {
+    var newData = await widget.onPaginationItemClick(i);
+    if (newData != null) {
+      setState(() {
+        _data = newData;
+      });
+    }
   }
 
   ///returns the width of each column by it's index
