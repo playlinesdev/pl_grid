@@ -414,13 +414,14 @@ class _PlGridState extends State<PlGrid> {
           (widget.notifySearchOnlyIf != null &&
               widget.notifySearchOnlyIf(lastSearch, typedText))) {
         //will call the widget.onSearch
-        var newData = await widget.onSearch(typedText);
-        //if newData came from the widget.onSearch
-        if (newData != null) {
-          setState(() {
-            _data = newData;
-          });
-        }
+        widget.onSearch(typedText).then((newData) {
+          //if newData came from the widget.onSearch
+          if (newData != null) {
+            setState(() {
+              _data = newData;
+            });
+          }
+        });
       }
     } else {
       //if the _handleSearchEvent is called whithin the search interval, schedules a new try
@@ -618,9 +619,7 @@ class _PlGridState extends State<PlGrid> {
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       padding: EdgeInsets.all(0),
       onPressed: i != widget.curPage && widget.onPaginationItemClick != null
-          ? () {
-              _handlePaginationClick(i);
-            }
+          ? () => _handlePaginationClick(i)
           : null,
       visualDensity: VisualDensity(horizontal: 1),
       child: Text(i.toString(), style: style),
@@ -629,13 +628,14 @@ class _PlGridState extends State<PlGrid> {
 
   ///Performs the widget.onPaginationItemClick and in an await
   ///call and if it returns new data, updates the data
-  void _handlePaginationClick(int i) async {
-    var newData = await widget.onPaginationItemClick(i);
-    if (newData != null) {
-      setState(() {
-        _data = newData;
-      });
-    }
+  void _handlePaginationClick(int i) {
+    widget.onPaginationItemClick(i).then((newData) {
+      if (newData != null) {
+        setState(() {
+          _data = newData;
+        });
+      }
+    });
   }
 
   ///returns the width of each column by it's index
