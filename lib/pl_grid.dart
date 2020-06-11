@@ -317,6 +317,7 @@ class PlGrid extends StatefulWidget {
 class _PlGridState extends State<PlGrid> {
   String lastSearch = '';
   int lastMilliseconds;
+  var _searchController = TextEditingController(text: '');
 
   @override
   void initState() {
@@ -373,9 +374,10 @@ class _PlGridState extends State<PlGrid> {
       child: Container(
         height: widget.searchBarHeight,
         child: TextFormField(
+          controller: _searchController,
           textAlign: widget.searchBarTextAlign,
-          onChanged: (typedText) {
-            _handleSearchEvent(typedText);
+          onChanged: (typed) {
+            _handleSearchEvent(typedText: typed);
           },
           style: widget.searchBarStyle,
           decoration: widget.searchBarInputDecoration,
@@ -384,7 +386,10 @@ class _PlGridState extends State<PlGrid> {
     );
   }
 
-  void _handleSearchEvent(String typedText) {
+  void _handleSearchEvent({String typedText}) {
+    if (typedText == null) {
+      typedText = _searchController.text;
+    }
     bool willNotify = false;
     //if an onSearch event was provided, checks wheter it will be called or not
     //checking the notifySearchOnlyIf and the searchInterval
@@ -404,17 +409,17 @@ class _PlGridState extends State<PlGrid> {
           Duration(milliseconds: widget.searchInterval - elapsedMilliseconds),
         ).then((value) {
           if (mounted && lastSearch != typedText) {
-            _handleSearchEvent(typedText);
+            _handleSearchEvent();
           }
         });
       }
     }
-    _updateSearchState(typedText);
+    _updateSearchState();
   }
 
-  void _updateSearchState(String typedText) {
+  void _updateSearchState() {
     setState(() {
-      lastSearch = typedText;
+      lastSearch = _searchController.text;
       //if the elapsed time since lastMilliseconds is greater than or equals to
       //the widget.searchInterval, updates the lastMilliseconds to start over
       //the countdown
