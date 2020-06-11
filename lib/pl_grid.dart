@@ -421,6 +421,8 @@ class _PlGridState extends State<PlGrid> {
               _data = newData;
             });
           }
+        }).catchError((error) {
+          throw Exception(error.toString());
         });
       }
     } else {
@@ -635,6 +637,8 @@ class _PlGridState extends State<PlGrid> {
           _data = newData;
         });
       }
+    }).catchError((error) {
+      throw Exception(error.toString());
     });
   }
 
