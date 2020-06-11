@@ -418,7 +418,7 @@ class _PlGridState extends State<PlGrid> {
           (widget.notifySearchOnlyIf != null &&
               widget.notifySearchOnlyIf(lastSearch, typedText))) {
         //will call the widget.onSearch
-        widget.onSearch(typedText ?? '').then((newData) {
+        widget.onSearch(typedText ?? _searchController.text).then((newData) {
           //if newData came from the widget.onSearch
           if (newData != null) {
             setState(() {
