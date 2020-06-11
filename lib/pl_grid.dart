@@ -90,6 +90,9 @@ class PlGrid extends StatefulWidget {
   ///```
   final Color Function(int) headerCellsColor;
 
+  ///Called on asynchronous errors such as on onSearch or onPaginationItemClick methods
+  final Function(dynamic) onError;
+
   ///Sets the height of each row manually
   ///```dart
   /// PlGrid(
@@ -293,6 +296,7 @@ class PlGrid extends StatefulWidget {
     this.onSearch,
     this.onPaginationItemClick,
     this.rowsCellRenderer,
+    this.onError,
   }) {
     if (headerColumns == null)
       throw Exception(_logError('Headers can\'t be null'));
@@ -422,17 +426,25 @@ class _PlGridState extends State<PlGrid> {
             });
           }
         }).catchError((error) {
-          throw Exception(error.toString());
+          _throwError(error);
         });
       }
     } else {
       //if the _handleSearchEvent is called whithin the search interval, schedules a new try
       Future.delayed(
         Duration(milliseconds: widget.searchInterval - elapsedMilliseconds),
-      ).then(
+      )
+          .then(
         (value) => _handleSearchEvent(),
-      );
+      )
+          .catchError((error) {
+        _throwError(error);
+      });
     }
+  }
+
+  void _throwError(dynamic error) {
+    if (widget.onError != null) widget.onError(error);
   }
 
   ///Resets the search interval making it equals to the current millisecondsSinceEpoch
@@ -638,7 +650,7 @@ class _PlGridState extends State<PlGrid> {
         });
       }
     }).catchError((error) {
-      throw Exception(error.toString());
+      _throwError(error);
     });
   }
 
