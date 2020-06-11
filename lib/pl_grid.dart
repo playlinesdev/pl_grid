@@ -439,8 +439,11 @@ class _PlGridState extends State<PlGrid> {
 
   ///if the widget.searchInterval argument was provided, checks if the
   ///elapsed time is already bigger than or equals to the given value
-  bool get _completedInterval =>
-      elapsedMilliseconds >= widget.searchInterval ?? false;
+  bool get _completedInterval {
+    if (widget.searchInterval != null)
+      return elapsedMilliseconds >= widget.searchInterval;
+    return true;
+  }
 
   ///measures the elapsed time
   int get elapsedMilliseconds =>
