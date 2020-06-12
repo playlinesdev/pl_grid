@@ -87,16 +87,31 @@ class PlGrid extends StatefulWidget {
   ///   },
   ///)
   ///```
-  ///
   final Future<List<List>> Function(String) onSearch;
 
   ///The percentage of the whole width that the column has to fit
   final List<double> columnWidthsPercentages;
 
   ///A function that takes an int for the page and performs an action when the user
-  ///touches or clicks a pagination index
+  ///touches or clicks a pagination index.
+  ///It shall be async and has to return a List<List>. The return is data to update the grid
+  ///if it returns null, the data inside the grid will not be modified. because
+  ///the setState method won't be called for the data property. Do not call
+  ///setState by yourself to change the data inside the grid directly, unless you really
+  ///want to. To modify the data whithin the grid, just return new data from the [onSearch]
+  ///function parameter or the [onPaginationItemClick] parameter or others that will
+  ///be implemented in later versions.
+  ///To implement a simple query in on the data you could use something like this:
   ///```dart
-  ///PlGrid(paginationItemClick: (i) => callApiGetMethod(page: i))
+  ///PlGrid(
+  ///   paginationItemClick: (i) async {
+  ///     var response = await callApiGetMethod(page: i);
+  ///     //the response.data will be the new data inside the grid. If it's null
+  ///     //it means you don't want to update the data. If you pass an empty list,
+  ///     //like return []; it will empty the data inside your pl_grid
+  ///     return response.data;
+  ///   },
+  ///)
   ///```
   final Future<List<List>> Function(int) onPaginationItemClick;
 
