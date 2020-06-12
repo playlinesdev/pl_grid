@@ -37,6 +37,10 @@ class PlGrid extends StatefulWidget {
   ///The whole width of the PlGrid widget
   final double width;
 
+  ///Theme to apply to the grid. If it's not supplied will use upper theme's such as the very
+  ///MaterialApp theme
+  final ThemeData themeData;
+
   ///The whole height of the PlGrid widget
   final double height;
 
@@ -279,6 +283,7 @@ class PlGrid extends StatefulWidget {
     this.showSearchBar = true,
     this.notifySearchOnlyIf,
     this.searchInterval,
+    this.themeData,
     this.asCard = true,
     this.internalGrid = false,
     this.searchBarTextAlign = TextAlign.start,
@@ -333,6 +338,13 @@ class _PlGridState extends State<PlGrid> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.themeData != null) {
+      return Theme(data: widget.themeData, child: _getWidget());
+    }
+    return _getWidget();
+  }
+
+  Widget _getWidget() {
     if (widget.asCard)
       return Card(
         key: widget.key,

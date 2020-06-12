@@ -13,8 +13,8 @@ void main() => runApp(
               [4, 'Yasmin', 22]
             ],
             onPaginationItemClick: (i) async {
-              await Future.delayed(Duration());
-              return null;
+              await Future.delayed(Duration(seconds: 3));
+              return [];
             },
             columnWidthsPercentages: <double>[15, 70, 15],
             curPage: 1,
