@@ -30,3 +30,9 @@ Now every single parameter in the gigantic constructor is very well documented, 
 ## [0.1.0] Breaking changes
 Converts the widget from a stateless widget to a stateful in order to control it better. Documentation also
 improved
+
+## [0.2.0] Many features
+Added many features on onSearch event (search interval and run condition), onPaginationItemClick event. Also the possibility to set a ThemeData for the whole widget including it's container card
+
+example:
+<img src="https://github.com/playlinesdev/pl_grid/blob/master/sample_nice.gif?raw=true"/>
