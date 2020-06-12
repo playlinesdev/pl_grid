@@ -5,6 +5,13 @@
 
 The PlGrid is a grid view for showing data in a table with a sticky header and pagination components.
 
+## Nice example of the customization possibilities
+
+<img src="https://github.com/playlinesdev/pl_grid/blob/master/sample_nice.gif?raw=true"/>
+
+The code for the above result
+<img src="https://github.com/playlinesdev/pl_grid/blob/master/sample_nice.gif?raw=true"/>
+
 ## Getting Started
 
 To add the grid on your project, install it by adding the pl_grid package dependency to your pubspec.yaml file, then import the PlGrid class like so: 
