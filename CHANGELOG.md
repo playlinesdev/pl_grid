@@ -36,3 +36,7 @@ Added many features on onSearch event (search interval and run condition), onPag
 
 example:
 <img src="https://github.com/playlinesdev/pl_grid/blob/master/sample_nice.gif?raw=true"/>
+
+## [0.2.1] Improved customizations
+Many customizations possibilities such as the possibility of pass different TextsStyles for the pagination item buttons, the possibility
+to have asynchronous data and much more

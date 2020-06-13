@@ -29,6 +29,10 @@ import 'package:flutter/material.dart';
 typedef bool WillNotifySearch(
     String lastSearchInput, String currentSearchInput);
 
+///A function that takes in a page number (starting from 1 not zero), and returns a style to use in
+///the button that triggers that page
+typedef TextStyle DynamicPaginationStyle(int pageNumber);
+
 ///The main class. Use it like
 class PlGrid extends StatefulWidget {
   ///A key for the Widget
@@ -67,6 +71,20 @@ class PlGrid extends StatefulWidget {
   ///```
   final List<List<dynamic>> data;
 
+  ///The grid now gives you the possibility to pass a asynchronous function to fetch
+  ///the data instead of passing it directly. Use it if your data will be fetched from
+  ///an api or if it's going to take some time to load. Use it like so:
+  ///```dart
+  ///PlGrid(
+  ///   dataAsync: ()async{
+  ///       var response = await callApiForData();
+  ///       List<List> convertedApiData = convertDataFromApi(response.data);
+  ///       return convertedApiData;
+  ///   }
+  ///)
+  ///```
+  final Future<List<List<dynamic>>> Function() dataAsync;
+
   ///Callback for searching if the search field is displayed. The callback shall be
   ///async and has to return a List<List>. The return is data to update the grid
   ///if it returns null, the data inside the grid will not be modified. because
@@ -89,7 +107,8 @@ class PlGrid extends StatefulWidget {
   ///```
   final Future<List<List>> Function(String) onSearch;
 
-  ///The percentage of the whole width that the column has to fit
+  ///The percentage of the whole width that the column has to take. If null,
+  ///will distribute all columns equally
   final List<double> columnWidthsPercentages;
 
   ///A function that takes an int for the page and performs an action when the user
@@ -169,6 +188,10 @@ class PlGrid extends StatefulWidget {
   ///Custom style to apply to the pagination item buttons
   final TextStyle paginationStyle;
 
+  ///A function that takes in a page number (starting from 1 not zero), and returns a style to use in
+  ///the button that triggers that page
+  final DynamicPaginationStyle paginationDynamicStyle;
+
   ///Custom style to apply to the header cells
   final TextStyle headerStyle;
 
@@ -219,6 +242,9 @@ class PlGrid extends StatefulWidget {
 
   ///The height for the searchbar widget
   final double searchBarHeight;
+
+  ///Auto focus property for the search field if [showSearchBar] is set to true
+  final bool searchFieldAutoFocus;
 
   ///A function that receives what user typed on searchbar and will only notify
   ///onSearch event if the condition is satisfied. For example:
@@ -295,7 +321,7 @@ class PlGrid extends StatefulWidget {
     this.width = 320,
     this.height = 220,
     this.headerHeight = 30,
-    @required this.columnWidthsPercentages,
+    this.columnWidthsPercentages,
     @required this.headerColumns,
     @required this.maxPages,
     @required this.curPage,
@@ -319,14 +345,17 @@ class PlGrid extends StatefulWidget {
     this.headerStyle = baseHeaderStyle,
     this.rowsStyle = baseRowStyle,
     this.paginationStyle = basePaginationStyle,
+    this.paginationDynamicStyle,
     this.headerAlignmentByCells,
     this.alignmentByRow,
     this.data,
+    this.dataAsync,
     this.headerCellRenderer,
     this.headerCellsColor,
     this.heightByRow,
     this.noContentWidget,
     this.onSearch,
+    this.searchFieldAutoFocus = false,
     this.onPaginationItemClick,
     this.rowsCellRenderer,
     this.onError,
@@ -361,6 +390,15 @@ class _PlGridState extends State<PlGrid> {
   void initState() {
     super.initState();
     _data = widget.data;
+    if (_data == null && widget.dataAsync != null) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        widget.dataAsync().then((dataReturned) {
+          setState(() {
+            _data = dataReturned;
+          });
+        });
+      });
+    }
     lastMilliseconds = DateTime.now().millisecondsSinceEpoch;
   }
 
@@ -401,7 +439,7 @@ class _PlGridState extends State<PlGrid> {
             Container(child: _tableHeader()),
             Container(height: 1, color: Colors.black),
             Expanded(
-              child: _data.length > 0
+              child: _data != null && _data.length > 0
                   ? _tableRows()
                   : widget.noContentWidget ?? Container(),
             ),
@@ -420,6 +458,7 @@ class _PlGridState extends State<PlGrid> {
       child: Container(
         height: widget.searchBarHeight,
         child: TextFormField(
+          autofocus: widget.searchFieldAutoFocus,
           controller: _searchController,
           textAlign: widget.searchBarTextAlign,
           onChanged: (typed) {
@@ -659,10 +698,19 @@ class _PlGridState extends State<PlGrid> {
               if (i != widget.curPage)
                 style = style.copyWith(color: Colors.blue);
 
+              //if a dynamic pagination style is passed, replaces the current one
+              if (widget.paginationDynamicStyle != null) {
+                style = widget.paginationDynamicStyle(i);
+              }
+
               return Container(
                 child: _pageNumberWidget(i, style: style),
-                width: (widget.width / style.fontSize / 2) +
-                    (style.fontSize * i.toString().length),
+                width: (widget.width /
+                        (style.fontSize ??
+                            PlGrid.basePaginationStyle.fontSize) /
+                        2) +
+                    ((style.fontSize ?? PlGrid.basePaginationStyle.fontSize) *
+                        i.toString().length),
               );
             }),
       ),

@@ -7,6 +7,8 @@ The PlGrid is a grid view for showing data in a table with a sticky header and p
 
 ## Nice example of the customization possibilities
 
+<img src="https://github.com/playlinesdev/pl_grid/blob/master/sample_customizations.gif?raw=true"/>
+
 <img src="https://github.com/playlinesdev/pl_grid/blob/master/sample_nice.gif?raw=true"/>
 
 The code for the above result
