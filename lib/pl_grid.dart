@@ -26,8 +26,7 @@ import 'package:flutter/material.dart';
 
 ///A function that takes in the last String the user typed and the current one and returns a rule
 ///if it should or not to notify a onSearch event
-typedef bool WillNotifySearch(
-    String lastSearchInput, String currentSearchInput);
+typedef bool WillNotifySearch(String lastSearchInput, String currentSearchInput);
 
 ///A function that takes in a page number (starting from 1 not zero), and returns a style to use in
 ///the button that triggers that page
@@ -36,14 +35,14 @@ typedef TextStyle DynamicPaginationStyle(int pageNumber);
 ///The main class. Use it like
 class PlGrid extends StatefulWidget {
   ///A key for the Widget
-  final Key key;
+  final Key? key;
 
   ///The whole width of the PlGrid widget
   final double width;
 
   ///Theme to apply to the grid. If it's not supplied will use upper theme's such as the very
   ///MaterialApp theme
-  final ThemeData themeData;
+  final ThemeData? themeData;
 
   ///The whole height of the PlGrid widget
   final double height;
@@ -83,7 +82,7 @@ class PlGrid extends StatefulWidget {
   ///   }
   ///)
   ///```
-  final Future<List<List<dynamic>>> Function() dataAsync;
+  final Future<List<List<dynamic>>> Function()? dataAsync;
 
   ///Callback for searching if the search field is displayed. The callback shall be
   ///async and has to return a List<List>. The return is data to update the grid
@@ -105,11 +104,11 @@ class PlGrid extends StatefulWidget {
   ///   },
   ///)
   ///```
-  final Future<List<List>> Function(String) onSearch;
+  final Future<List<List>> Function(String)? onSearch;
 
   ///The percentage of the whole width that the column has to take. If null,
   ///will distribute all columns equally
-  final List<double> columnWidthsPercentages;
+  final List<double>? columnWidthsPercentages;
 
   ///A function that takes an int for the page and performs an action when the user
   ///touches or clicks a pagination index.
@@ -132,17 +131,17 @@ class PlGrid extends StatefulWidget {
   ///   },
   ///)
   ///```
-  final Future<List<List>> Function(int) onPaginationItemClick;
+  final Future<List<List>> Function(int)? onPaginationItemClick;
 
   ///A function that takes in the index of the a header cell and returns a color for it's background
   ///```dart
   /////applies a "zebra effect" on the cells of the header
   ///PlGrid(headerCellsColor: (i)=> i % 2 == 0 ? Colors.white : Colors.grey)
   ///```
-  final Color Function(int) headerCellsColor;
+  final Color Function(int)? headerCellsColor;
 
   ///Called on asynchronous errors such as on onSearch or onPaginationItemClick methods
-  final Function(dynamic) onError;
+  final Function(dynamic)? onError;
 
   ///Sets the height of each row manually
   ///```dart
@@ -154,7 +153,7 @@ class PlGrid extends StatefulWidget {
   ///  }
   /// )
   ///```
-  final double Function(int) heightByRow;
+  final double Function(int)? heightByRow;
 
   ///Sets the row cells alignment in a row manually
   ///```dart
@@ -164,7 +163,7 @@ class PlGrid extends StatefulWidget {
   ///  }
   /// )
   ///```
-  final Alignment Function(int, int) alignmentByRow;
+  final Alignment Function(int, int)? alignmentByRow;
 
   ///Sets the header cells alignment manually
   ///```dart
@@ -174,7 +173,7 @@ class PlGrid extends StatefulWidget {
   ///  }
   /// )
   ///```
-  final Alignment Function(int) headerAlignmentByCells;
+  final Alignment Function(int)? headerAlignmentByCells;
 
   ///Max number of pages starting on page 1
   final int maxPages;
@@ -183,20 +182,20 @@ class PlGrid extends StatefulWidget {
   final int curPage;
 
   ///Custom style to apply to the rows
-  final TextStyle rowsStyle;
+  final TextStyle? rowsStyle;
 
   ///Custom style to apply to the pagination item buttons
-  final TextStyle paginationStyle;
+  final TextStyle? paginationStyle;
 
   ///A function that takes in a page number (starting from 1 not zero), and returns a style to use in
   ///the button that triggers that page
-  final DynamicPaginationStyle paginationDynamicStyle;
+  final DynamicPaginationStyle? paginationDynamicStyle;
 
   ///Custom style to apply to the header cells
-  final TextStyle headerStyle;
+  final TextStyle? headerStyle;
 
   ///A style for the "zebra effect affected" rows in case parameter [applyZebraEffect] is set to true
-  final TextStyle zebraStyle;
+  final TextStyle? zebraStyle;
 
   ///Render the widgetas a Card
   final bool asCard;
@@ -212,13 +211,13 @@ class PlGrid extends StatefulWidget {
 
   ///Padding to be applied on the search bar in case parameter [showSearchBar] is
   ///set to true
-  final EdgeInsets searchBarPadding;
+  final EdgeInsets? searchBarPadding;
 
   ///Padding to be applied on every and each header cell
-  final EdgeInsets headerCellsPadding;
+  final EdgeInsets? headerCellsPadding;
 
   ///Padding to be applied on every and each row cell
-  final EdgeInsets rowCellsPadding;
+  final EdgeInsets? rowCellsPadding;
 
   ///Wheather to show or not the searchbar
   final bool showSearchBar;
@@ -232,10 +231,10 @@ class PlGrid extends StatefulWidget {
   ///   ),
   ///)
   ///```
-  final InputDecoration searchBarInputDecoration;
+  final InputDecoration? searchBarInputDecoration;
 
   ///A style to apply on the searchbar
-  final TextStyle searchBarStyle;
+  final TextStyle? searchBarStyle;
 
   ///Searchbar text align property
   final TextAlign searchBarTextAlign;
@@ -260,7 +259,7 @@ class PlGrid extends StatefulWidget {
   ///   }
   ///)
   ///```
-  final WillNotifySearch notifySearchOnlyIf;
+  final WillNotifySearch? notifySearchOnlyIf;
 
   ///A period to wait from the time the user starts typing to in fact the
   ///time the widget will notify an onSearchType event so that it would not update
@@ -268,18 +267,18 @@ class PlGrid extends StatefulWidget {
   final int searchInterval;
 
   ///If rendering as a Card, sets the internal padding from the edge of the
-  final EdgeInsets asCardPadding;
+  final EdgeInsets? asCardPadding;
 
   ///Widget to display when theres no registers to display
-  final Widget noContentWidget;
+  final Widget? noContentWidget;
 
   ///A function that receives the index of the cell, the content and
   ///returns a widget to render the content of that cell
-  final Widget Function(int row, int cell, dynamic) rowsCellRenderer;
+  final Widget? Function(int row, int cell, dynamic)? rowsCellRenderer;
 
   ///A function that receives the index of the header cell, the content and
   ///returns a widget to render the content of that cell
-  final Widget Function(int, dynamic) headerCellRenderer;
+  final Widget? Function(int, dynamic)? headerCellRenderer;
 
   static const baseSearchBarInputDecoration = InputDecoration(
     suffixIcon: Icon(Icons.search, size: 16),
@@ -289,22 +288,16 @@ class PlGrid extends StatefulWidget {
     filled: true,
   );
 
-  static const baseSearchBarPadding =
-      const EdgeInsets.only(left: 180, top: 5, bottom: 5, right: 0);
+  static const baseSearchBarPadding = const EdgeInsets.only(left: 180, top: 5, bottom: 5, right: 0);
   static const baseAsCardPadding = const EdgeInsets.all(4);
   static const baseHeaderCellsPadding = EdgeInsets.only(left: 10);
-  static const baseRowCellsPadding =
-      EdgeInsets.only(left: 10, top: 5, bottom: 5);
+  static const baseRowCellsPadding = EdgeInsets.only(left: 10, top: 5, bottom: 5);
 
   static const baseSearchBarStyle = const TextStyle(fontSize: 14);
-  static const baseHeaderStyle =
-      const TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
-  static const baseRowStyle =
-      TextStyle(fontSize: 14, fontWeight: FontWeight.normal);
-  static const baseZebraStyle = TextStyle(
-      fontSize: 14, color: Colors.black87, fontWeight: FontWeight.normal);
-  static const basePaginationStyle =
-      const TextStyle(fontSize: 15, fontWeight: FontWeight.normal);
+  static const baseHeaderStyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+  static const baseRowStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.normal);
+  static const baseZebraStyle = TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.normal);
+  static const basePaginationStyle = const TextStyle(fontSize: 15, fontWeight: FontWeight.normal);
 
   ///Constructs a grid with the given parameters
   ///For many of the constructor input uses static const values that can be used with a
@@ -322,9 +315,9 @@ class PlGrid extends StatefulWidget {
     this.height = 220,
     this.headerHeight = 30,
     this.columnWidthsPercentages,
-    @required this.headerColumns,
-    @required this.maxPages,
-    @required this.curPage,
+    required this.headerColumns,
+    required this.maxPages,
+    required this.curPage,
     this.headerCellsPadding = baseHeaderCellsPadding,
     this.applyZebraEffect = true,
     this.rowCellsPadding = baseRowCellsPadding,
@@ -336,7 +329,7 @@ class PlGrid extends StatefulWidget {
     this.searchBarStyle = baseSearchBarStyle,
     this.showSearchBar = true,
     this.notifySearchOnlyIf,
-    this.searchInterval,
+    this.searchInterval = 2,
     this.themeData,
     this.asCard = true,
     this.internalGrid = false,
@@ -348,7 +341,7 @@ class PlGrid extends StatefulWidget {
     this.paginationDynamicStyle,
     this.headerAlignmentByCells,
     this.alignmentByRow,
-    this.data,
+    required this.data,
     this.dataAsync,
     this.headerCellRenderer,
     this.headerCellsColor,
@@ -360,15 +353,9 @@ class PlGrid extends StatefulWidget {
     this.rowsCellRenderer,
     this.onError,
   }) {
-    if (headerColumns == null)
-      throw Exception(_logError('Headers can\'t be null'));
-    if (columnWidthsPercentages != null &&
-        columnWidthsPercentages.length > headerColumns.length)
-      throw Exception(_logError(
-          'columnWidthsPercentages length can\'t be greater than headerColumns length'));
-    if (columnWidthsPercentages != null &&
-        columnWidthsPercentages.reduce((value, element) => value + element) >
-            100)
+    if (columnWidthsPercentages != null && columnWidthsPercentages!.length > headerColumns.length)
+      throw Exception(_logError('columnWidthsPercentages length can\'t be greater than headerColumns length'));
+    if (columnWidthsPercentages != null && columnWidthsPercentages!.reduce((value, element) => value + element) > 100)
       throw Exception(_logError('columnWidth\'s sum is greather than 100'));
   }
 
@@ -382,8 +369,8 @@ class PlGrid extends StatefulWidget {
 
 class _PlGridState extends State<PlGrid> {
   String lastSearch = '';
-  int lastMilliseconds;
-  List<List> _data;
+  late int lastMilliseconds;
+  late List<List> _data;
   var _searchController = TextEditingController(text: '');
 
   @override
@@ -392,11 +379,13 @@ class _PlGridState extends State<PlGrid> {
     _data = widget.data;
     if (_data == null && widget.dataAsync != null) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        widget.dataAsync().then((dataReturned) {
-          setState(() {
-            _data = dataReturned;
+        if (widget.dataAsync != null) {
+          widget.dataAsync!().then((dataReturned) {
+            setState(() {
+              _data = dataReturned;
+            });
           });
-        });
+        }
       });
     }
     lastMilliseconds = DateTime.now().millisecondsSinceEpoch;
@@ -405,7 +394,7 @@ class _PlGridState extends State<PlGrid> {
   @override
   Widget build(BuildContext context) {
     if (widget.themeData != null) {
-      return Theme(data: widget.themeData, child: _getWidget());
+      return Theme(data: widget.themeData ?? ThemeData.light(), child: _getWidget());
     }
     return _getWidget();
   }
@@ -415,7 +404,7 @@ class _PlGridState extends State<PlGrid> {
       return Card(
         key: widget.key,
         child: Padding(
-          padding: widget.asCardPadding,
+          padding: widget.asCardPadding ?? EdgeInsets.all(0),
           child: content,
         ),
       );
@@ -423,9 +412,7 @@ class _PlGridState extends State<PlGrid> {
   }
 
   Widget get content => Container(
-        key: widget.asCard
-            ? null
-            : widget.key, //if asCard, the key is in the Card
+        key: widget.asCard ? null : widget.key, //if asCard, the key is in the Card
         width: widget.width,
         height: widget.height,
         child: Column(
@@ -439,22 +426,20 @@ class _PlGridState extends State<PlGrid> {
             Container(child: _tableHeader()),
             Container(height: 1, color: Colors.black),
             Expanded(
-              child: _data != null && _data.length > 0
-                  ? _tableRows()
-                  : widget.noContentWidget ?? Container(),
+              child: _data.length > 0 ? _tableRows() : widget.noContentWidget ?? Container(),
             ),
             Container(
                 child: Scrollbar(
                   child: _pagination(),
                 ),
-                height: widget.paginationStyle.fontSize * 2)
+                height: widget.paginationStyle != null ? widget.paginationStyle!.fontSize! * 2 : 10)
           ],
         ),
       );
 
   Widget _searchBar() {
     return Padding(
-      padding: widget.searchBarPadding,
+      padding: widget.searchBarPadding ?? EdgeInsets.all(0),
       child: Container(
         height: widget.searchBarHeight,
         child: TextFormField(
@@ -463,9 +448,7 @@ class _PlGridState extends State<PlGrid> {
           textAlign: widget.searchBarTextAlign,
           onChanged: (typed) {
             //if the widget.onSearch was not passed, nothing else should execute
-            if (widget.onSearch != null) {
-              _handleSearchEvent(typedText: typed);
-            }
+            _handleSearchEvent(typedText: typed);
           },
           style: widget.searchBarStyle,
           decoration: widget.searchBarInputDecoration,
@@ -476,7 +459,7 @@ class _PlGridState extends State<PlGrid> {
 
   ///Decides if the widget.onSearch event will or will not be called
   ///depending on the widget.searchInterval and widget.notifyOnlyIf parameters
-  void _handleSearchEvent({String typedText}) async {
+  void _handleSearchEvent({required String typedText}) async {
     //if the interval is not completed will not call the widget.onSearch
     if (_completedInterval) {
       //once completed, resets it
@@ -487,28 +470,23 @@ class _PlGridState extends State<PlGrid> {
       //if the call of typedTex contains the same text of the previous call or
       //if the call came from a schedule and the current _searchController.text is
       //already equals to the last search, ignore the event
-      if (typedText == lastSearch ||
-          (typedText == null &&
-              _searchController.text.isNotEmpty &&
-              _searchController.text == lastSearch)) {
+      if (typedText == lastSearch || (typedText == null && _searchController.text.isNotEmpty && _searchController.text == lastSearch)) {
         return;
       }
 
       //if the widget.notifySearchOnlyIf is passed, checks it
-      if (widget.notifySearchOnlyIf == null ||
-          (widget.notifySearchOnlyIf != null &&
-              widget.notifySearchOnlyIf(lastSearch, typedText))) {
+      if (widget.notifySearchOnlyIf == null || (widget.notifySearchOnlyIf != null && widget.notifySearchOnlyIf!(lastSearch, typedText))) {
         //will call the widget.onSearch
-        widget.onSearch(typedText ?? _searchController.text).then((newData) {
-          //if newData came from the widget.onSearch
-          if (newData != null) {
+        if (widget.onSearch != null) {
+          widget.onSearch!(typedText ?? _searchController.text).then((newData) {
+            //if newData came from the widget.onSearch
             setState(() {
               _data = newData;
             });
-          }
-        }).catchError((error) {
-          _throwError(error);
-        });
+          }).catchError((error) {
+            _throwError(error);
+          });
+        }
       }
     } else {
       //if the _handleSearchEvent is called whithin the search interval, schedules a new try
@@ -516,7 +494,7 @@ class _PlGridState extends State<PlGrid> {
         Duration(milliseconds: widget.searchInterval - elapsedMilliseconds),
       )
           .then(
-        (value) => _handleSearchEvent(),
+        (value) => _handleSearchEvent(typedText: value),
       )
           .catchError((error) {
         _throwError(error);
@@ -525,7 +503,7 @@ class _PlGridState extends State<PlGrid> {
   }
 
   void _throwError(dynamic error) {
-    if (widget.onError != null) widget.onError(error);
+    if (widget.onError != null) widget.onError!(error);
   }
 
   ///Resets the search interval making it equals to the current millisecondsSinceEpoch
@@ -536,14 +514,12 @@ class _PlGridState extends State<PlGrid> {
   ///if the widget.searchInterval argument was provided, checks if the
   ///elapsed time is already bigger than or equals to the given value
   bool get _completedInterval {
-    if (widget.searchInterval != null)
-      return elapsedMilliseconds >= widget.searchInterval;
+    return elapsedMilliseconds >= widget.searchInterval;
     return true;
   }
 
   ///measures the elapsed time
-  int get elapsedMilliseconds =>
-      DateTime.now().millisecondsSinceEpoch - lastMilliseconds;
+  int get elapsedMilliseconds => DateTime.now().millisecondsSinceEpoch - lastMilliseconds;
 
   ///Builds the table header
   Widget _tableHeader() {
@@ -551,19 +527,13 @@ class _PlGridState extends State<PlGrid> {
       mainAxisAlignment: MainAxisAlignment.start,
       children: List.generate(widget.headerColumns.length, (i) {
         bool left = i == 0, right = true;
-        Widget cellWidget = widget.headerCellRenderer != null
-            ? widget.headerCellRenderer(i, widget.headerColumns[i])
-            : null;
+        Widget? cellWidget = widget.headerCellRenderer != null ? widget.headerCellRenderer!(i, widget.headerColumns[i]) : null;
         return Container(
           width: _getColumnWidth(i),
           height: widget.headerHeight,
-          alignment: widget.headerAlignmentByCells != null
-              ? widget.headerAlignmentByCells(i)
-              : Alignment.centerLeft,
+          alignment: widget.headerAlignmentByCells != null ? widget.headerAlignmentByCells!(i) : Alignment.centerLeft,
           decoration: BoxDecoration(
-            color: widget.headerCellsColor != null
-                ? widget.headerCellsColor(i)
-                : null,
+            color: widget.headerCellsColor != null ? widget.headerCellsColor!(i) : null,
             border: _makeBorder(
               top: widget.internalGrid ? true : false,
               left: widget.internalGrid ? left : false,
@@ -572,13 +542,12 @@ class _PlGridState extends State<PlGrid> {
             ),
           ),
           child: Padding(
-            padding: widget.headerCellsPadding,
+            padding: widget.headerCellsPadding ?? EdgeInsets.all(0),
             child: cellWidget != null
                 ? cellWidget
                 : widget.headerColumns[i] is Widget
                     ? widget.headerColumns[i]
-                    : Text(widget.headerColumns[i].toString(),
-                        style: widget.headerStyle),
+                    : Text(widget.headerColumns[i].toString(), style: widget.headerStyle),
           ),
         );
       }),
@@ -591,34 +560,21 @@ class _PlGridState extends State<PlGrid> {
     bool top = true,
     bool bottom = true,
     bool zebra = false,
-    int rowNumber,
-    TextStyle style,
+    required int rowNumber,
+    TextStyle? style,
   }) {
     List<Widget> cellWidgets = List.generate(
       cells.length,
       (i) {
         bool left = i == 0, right = true;
-        var _style =
-            widget.applyZebraEffect && zebra ? widget.zebraStyle : style;
-        Widget cellWidget = widget.rowsCellRenderer != null
-            ? widget.rowsCellRenderer(rowNumber, i, cells[i])
-            : null;
-        if (cellWidget == null) {
-          cellWidget = cells[i] is Widget
-              ? cells[i]
-              : Text(cells[i].toString(), style: _style ?? widget.rowsStyle);
-        }
+        var _style = widget.applyZebraEffect && zebra ? widget.zebraStyle : style;
+        Widget? cellWidget = widget.rowsCellRenderer != null ? widget.rowsCellRenderer!(rowNumber, i, cells[i]) : null;
         return Container(
-          height:
-              widget.heightByRow != null ? widget.heightByRow(rowNumber) : null,
+          height: widget.heightByRow != null ? widget.heightByRow!(rowNumber) : null,
           width: _getColumnWidth(i),
-          alignment: widget.alignmentByRow != null
-              ? widget.alignmentByRow(rowNumber, i)
-              : Alignment.centerLeft,
+          alignment: widget.alignmentByRow != null ? widget.alignmentByRow!(rowNumber, i) : Alignment.centerLeft,
           decoration: BoxDecoration(
-              boxShadow: widget.applyZebraEffect && zebra
-                  ? [BoxShadow(color: Colors.grey[200])]
-                  : null,
+              boxShadow: widget.applyZebraEffect && zebra ? [BoxShadow(color: Colors.grey[200]!)] : null,
               border: _makeBorder(
                 top: false,
                 left: widget.internalGrid ? left : false,
@@ -626,7 +582,7 @@ class _PlGridState extends State<PlGrid> {
                 right: widget.internalGrid ? right : false,
               )),
           child: Padding(
-            padding: widget.rowCellsPadding,
+            padding: widget.rowCellsPadding ?? EdgeInsets.all(0),
             child: cellWidget,
           ),
         );
@@ -655,8 +611,7 @@ class _PlGridState extends State<PlGrid> {
         bottom: bottom ? _border(borderColor, width) : BorderSide.none,
       );
 
-  BorderSide _border([Color color, double width]) =>
-      BorderSide(color: color, width: width);
+  BorderSide _border([Color? color, double? width]) => BorderSide(color: color ?? Colors.black, width: width ?? 0);
 
   ///Builds all the rows
   Widget _tableRows() {
@@ -682,35 +637,26 @@ class _PlGridState extends State<PlGrid> {
     return Padding(
       padding: const EdgeInsets.only(top: 1),
       child: Container(
-        decoration: BoxDecoration(
-            border: widget.internalGrid
-                ? null
-                : Border(top: BorderSide(width: 0.7, color: Colors.black54))),
+        decoration: BoxDecoration(border: widget.internalGrid ? null : Border(top: BorderSide(width: 0.7, color: Colors.black54))),
         child: ListView.separated(
             shrinkWrap: true,
             scrollDirection: Axis.horizontal,
-            separatorBuilder: (ctx, i) =>
-                Container(width: widget.paginationStyle.fontSize / 2),
+            separatorBuilder: (ctx, i) => Container(width: widget.paginationStyle != null ? widget.paginationStyle!.fontSize! / 2 : 0),
             itemCount: widget.maxPages,
             itemBuilder: (ctx, index) {
               var i = index + 1;
               var style = widget.paginationStyle;
-              if (i != widget.curPage)
-                style = style.copyWith(color: Colors.blue);
+              if (i != widget.curPage) style = style?.copyWith(color: Colors.blue);
 
               //if a dynamic pagination style is passed, replaces the current one
               if (widget.paginationDynamicStyle != null) {
-                style = widget.paginationDynamicStyle(i);
+                style = widget.paginationDynamicStyle!(i);
               }
 
               return Container(
                 child: _pageNumberWidget(i, style: style),
-                width: (widget.width /
-                        (style.fontSize ??
-                            PlGrid.basePaginationStyle.fontSize) /
-                        2) +
-                    ((style.fontSize ?? PlGrid.basePaginationStyle.fontSize) *
-                        i.toString().length),
+                width: (widget.width / (style?.fontSize ?? PlGrid.basePaginationStyle.fontSize ?? 1) / 2) +
+                    ((style?.fontSize ?? PlGrid.basePaginationStyle.fontSize ?? 1) * i.toString().length),
               );
             }),
       ),
@@ -718,14 +664,14 @@ class _PlGridState extends State<PlGrid> {
   }
 
   ///Builds the page number
-  Widget _pageNumberWidget(int i, {TextStyle style}) {
-    return FlatButton(
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      padding: EdgeInsets.all(0),
-      onPressed: i != widget.curPage && widget.onPaginationItemClick != null
-          ? () => _handlePaginationClick(i)
-          : null,
-      visualDensity: VisualDensity(horizontal: 1),
+  Widget _pageNumberWidget(int i, {TextStyle? style}) {
+    return ElevatedButton(
+      style: ButtonStyle(
+        padding: WidgetStateProperty.all(EdgeInsets.all(0)),
+        visualDensity: VisualDensity(horizontal: 1),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      onPressed: i != widget.curPage && widget.onPaginationItemClick != null ? () => _handlePaginationClick(i) : null,
       child: Text(i.toString(), style: style),
     );
   }
@@ -733,22 +679,21 @@ class _PlGridState extends State<PlGrid> {
   ///Performs the widget.onPaginationItemClick and in an await
   ///call and if it returns new data, updates the data
   void _handlePaginationClick(int i) {
-    widget.onPaginationItemClick(i).then((newData) {
-      if (newData != null) {
+    if (widget.onPaginationItemClick != null) {
+      widget.onPaginationItemClick!(i).then((newData) {
         setState(() {
           _data = newData;
         });
-      }
-    }).catchError((error) {
-      _throwError(error);
-    });
+      }).catchError((error) {
+        _throwError(error);
+      });
+    }
   }
 
   ///returns the width of each column by it's index
   double _getColumnWidth(int index) {
-    return widget.columnWidthsPercentages != null &&
-            widget.columnWidthsPercentages.length >= widget.headerColumns.length
-        ? widget.columnWidthsPercentages[index] / 100 * widget.width
+    return widget.columnWidthsPercentages != null && widget.columnWidthsPercentages!.length >= widget.headerColumns.length
+        ? widget.columnWidthsPercentages![index] / 100 * widget.width
         : widget.width / widget.headerColumns.length;
   }
 }

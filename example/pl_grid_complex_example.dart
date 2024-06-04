@@ -23,8 +23,9 @@ class _PlGridExampleState extends State<PlGridExample> {
             searchBarHeight: 30,
             searchBarTextAlign: TextAlign.center,
             showSearchBar: true,
-            onPaginationItemClick: (pageClicked) {
+            onPaginationItemClick: (pageClicked) async {
               print('Call the api with page attribute');
+              return [];
             },
             noContentWidget: Center(
               child: Container(
@@ -33,26 +34,23 @@ class _PlGridExampleState extends State<PlGridExample> {
                 child: CircularProgressIndicator(),
               ),
             ),
-            onSearch: (searchTextTyped) {
+            onSearch: (searchTextTyped) async {
               print(searchTextTyped);
+              return [];
             },
             headerCellRenderer: (cell, content) => cell == 2
-                ? FlatButton(
+                ? TextButton(
                     onPressed: () {},
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Text(content),
-                        Icon(Icons.settings_applications)
-                      ],
+                      children: <Widget>[Text(content), Icon(Icons.settings_applications)],
                     ),
                   )
                 : null,
-            headerAlignmentByCells: (i) =>
-                i % 2 == 0 ? Alignment.topRight : Alignment.bottomRight,
+            headerAlignmentByCells: (i) => i % 2 == 0 ? Alignment.topRight : Alignment.bottomRight,
             asCardPadding: PlGrid.baseAsCardPadding.copyWith(left: 35),
-            headerCellsColor: (i) => Colors.blueGrey[50],
-            heightByRow: (row) => row == 2 ? 40 : null,
+            headerCellsColor: (i) => Colors.blueGrey[50]!,
+            heightByRow: (row) => row == 2 ? 40 : 0,
             rowsCellRenderer: (row, cell, content) => row == 2 && cell == 2
                 ? Icon(
                     Icons.sentiment_satisfied,
@@ -61,9 +59,7 @@ class _PlGridExampleState extends State<PlGridExample> {
                 : null,
             zebraStyle: PlGrid.baseZebraStyle.copyWith(color: Colors.blueGrey),
             rowCellsPadding: PlGrid.baseRowCellsPadding.copyWith(right: 10),
-            alignmentByRow: (row, cell) => row == 2 && cell == 2
-                ? Alignment(-0.85, -1)
-                : Alignment.bottomRight,
+            alignmentByRow: (row, cell) => row == 2 && cell == 2 ? Alignment(-0.85, -1) : Alignment.bottomRight,
             headerStyle: PlGrid.baseHeaderStyle.copyWith(fontSize: 13),
             columnWidthsPercentages: <double>[25, 25, 25, 25],
             headerColumns: ['Id', 'Name', 'Age', 'aa'],
