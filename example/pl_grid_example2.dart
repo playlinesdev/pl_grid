@@ -12,16 +12,7 @@ void main() => runApp(
 get grid => PlGrid(
       headerColumns: [
         'Id',
-        FlatButton.icon(
-            onPressed: () {},
-            icon: Icon(
-              Icons.add_box,
-              size: 8,
-            ),
-            label: Text(
-              'Product',
-              style: TextStyle(fontSize: 13),
-            )),
+        TextButton.icon(onPressed: () {}, label: Text('Product', style: TextStyle(fontSize: 13)), icon: Icon(Icons.add_box, size: 8)),
         'Price',
         'Stock',
         'Action'
@@ -39,8 +30,9 @@ get grid => PlGrid(
       width: 320,
       height: 200,
       asCardPadding: EdgeInsets.all(10),
-      onPaginationItemClick: (i) {
+      onPaginationItemClick: (i) async {
         print('touched pagination page $i button');
+        return [];
       },
       data: data,
       headerHeight: 25,
@@ -57,7 +49,7 @@ get data => [
         'Pencil',
         1.5,
         30,
-        FlatButton.icon(
+        TextButton.icon(
             onPressed: () {},
             icon: Icon(
               Icons.access_alarm,
